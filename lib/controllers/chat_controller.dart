@@ -40,6 +40,10 @@ class ChatController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<List<Message>> fetchMessages() async {
+    return await _supabaseService.getMessages();
+  }
+
   @override
   void dispose() {
     disconnect();

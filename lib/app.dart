@@ -27,10 +27,6 @@ class App extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'EyeOn AI',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
         home: const AuthWrapper(),
         routes: {
           '/login': (context) => const LoginScreen(),
@@ -53,21 +49,41 @@ class AuthWrapper extends StatelessWidget {
     final authController = context.watch<AuthController>();
 
     if (authController.isAuthenticated) {
-      return const HomeScreen();
+      return const MainScreen();
     } else {
       return const LoginScreen();
     }
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 1;
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    ChatScreen(),
+    CamerasScreen(),
+    EventsScreen(),
+    AlertsScreen(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('EyeOn AI Dashboard'),
+        title: const Text('EyeOn AI'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -78,36 +94,20 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: GridView.count(
-        crossAxisCount: 2,
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildMenuCard(context, 'Chat', Icons.chat, '/chat'),
-          _buildMenuCard(context, 'Cameras', Icons.camera, '/cameras'),
-          _buildMenuCard(context, 'Events', Icons.event, '/events'),
-          _buildMenuCard(context, 'Alerts', Icons.notifications, '/alerts'),
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
+          BottomNavigationBarItem(icon: Icon(Icons.camera), label: 'Cameras'),
+          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'Alerts',
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMenuCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    String route,
-  ) {
-    return Card(
-      child: InkWell(
-        onTap: () => Navigator.pushNamed(context, route),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 48),
-            const SizedBox(height: 8),
-            Text(title, style: Theme.of(context).textTheme.headlineSmall),
-          ],
-        ),
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.blue,
+        onTap: _onItemTapped,
       ),
     );
   }

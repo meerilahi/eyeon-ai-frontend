@@ -14,47 +14,65 @@ class CamerasScreen extends StatefulWidget {
 
 class _CamerasScreenState extends State<CamerasScreen> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _rtspController = TextEditingController();
+  late Future<List<Camera>> _camerasFuture;
 
   @override
   void initState() {
     super.initState();
-    context.read<CamerasController>().loadCameras();
+    _camerasFuture = context.read<CamerasController>().fetchCameras();
   }
 
   @override
   Widget build(BuildContext context) {
-    final camerasController = context.watch<CamerasController>();
-
     return Scaffold(
       appBar: AppBar(title: const Text('Cameras')),
-      body: camerasController.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: camerasController.cameras.length,
+      body: FutureBuilder<List<Camera>>(
+        future: _camerasFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            final cameras = snapshot.data!;
+            return ListView.builder(
+              itemCount: cameras.length,
               itemBuilder: (context, index) {
-                final camera = camerasController.cameras[index];
+                final camera = cameras[index];
                 return ListTile(
                   title: Text(camera.name),
-                  subtitle: Text(camera.rtspUrl),
+                  subtitle: Text('${camera.description}\n${camera.rtspUrl}'),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),
-                    onPressed: () => camerasController.deleteCamera(camera.id),
+                    onPressed: () {
+                      context.read<CamerasController>().deleteCamera(
+                        camera.cameraId,
+                      );
+                      setState(() {
+                        _camerasFuture = context
+                            .read<CamerasController>()
+                            .fetchCameras();
+                      });
+                    },
                   ),
                 );
               },
-            ),
+            );
+          } else {
+            return const Center(child: Text('No cameras found'));
+          }
+        },
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddCameraDialog(context, camerasController),
+        onPressed: () => _showAddCameraDialog(context),
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  void _showAddCameraDialog(
-    BuildContext context,
-    CamerasController controller,
-  ) {
+  void _showAddCameraDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -63,6 +81,11 @@ class _CamerasScreenState extends State<CamerasScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             CustomTextField(controller: _nameController, label: 'Camera Name'),
+            const SizedBox(height: 16),
+            CustomTextField(
+              controller: _descriptionController,
+              label: 'Description',
+            ),
             const SizedBox(height: 16),
             CustomTextField(controller: _rtspController, label: 'RTSP URL'),
           ],
@@ -76,14 +99,22 @@ class _CamerasScreenState extends State<CamerasScreen> {
             text: 'Add',
             onPressed: () {
               if (_nameController.text.isNotEmpty &&
+                  _descriptionController.text.isNotEmpty &&
                   _rtspController.text.isNotEmpty) {
-                controller.addCamera(
+                context.read<CamerasController>().addCamera(
                   _nameController.text,
+                  _descriptionController.text,
                   _rtspController.text,
                 );
                 _nameController.clear();
+                _descriptionController.clear();
                 _rtspController.clear();
                 Navigator.of(context).pop();
+                setState(() {
+                  _camerasFuture = context
+                      .read<CamerasController>()
+                      .fetchCameras();
+                });
               }
             },
           ),

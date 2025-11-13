@@ -14,11 +14,15 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
+  late Future<List<Message>> _messagesFuture;
 
   @override
   void initState() {
     super.initState();
-    context.read<ChatController>().connect();
+    _messagesFuture = context.read<ChatController>().fetchMessages();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ChatController>().connect();
+    });
   }
 
   @override
@@ -46,19 +50,33 @@ class _ChatScreenState extends State<ChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: chatController.messages.length,
-              itemBuilder: (context, index) {
-                final message = chatController.messages[index];
-                return ListTile(
-                  title: Text(message.content),
-                  subtitle: Text(message.timestamp.toString()),
-                  leading: Icon(
-                    message.type == MessageType.user
-                        ? Icons.person
-                        : Icons.smart_toy,
-                  ),
-                );
+            child: FutureBuilder<List<Message>>(
+              future: _messagesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (snapshot.hasData) {
+                  final messages = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      return ListTile(
+                        title: Text(message.content),
+                        subtitle: Text(message.timestamp.toString()),
+                        leading: Icon(
+                          message.type == MessageType.user
+                              ? Icons.person
+                              : Icons.smart_toy,
+                        ),
+                      );
+                    },
+                  );
+                } else {
+                  return const Center(child: Text('No messages found'));
+                }
               },
             ),
           ),

@@ -6,82 +6,99 @@ import '../models/message.dart';
 
 class SupabaseService {
   final SupabaseClient _client = Supabase.instance.client;
+  final String _user_id = Supabase.instance.client.auth.currentUser?.id ?? "";
+  // final String _user_id = AuthController().user?.id ?? "";
 
   // Cameras CRUD
   Future<List<Camera>> getCameras() async {
-    final response = await _client.from('cameras').select();
+    final response = await _client
+        .from('cameras')
+        .select()
+        .eq("user_id", _user_id);
     return response.map((json) => Camera.fromJson(json)).toList();
   }
 
-  Future<Camera> addCamera(String name, String rtspUrl) async {
+  Future<Camera> addCamera(
+    String name,
+    String description,
+    String rtspUrl,
+  ) async {
     final response = await _client
         .from('cameras')
-        .insert({'name': name, 'rtsp_url': rtspUrl})
+        .insert({'name': name, 'description': description, 'rtsp_url': rtspUrl})
         .select()
         .single();
     return Camera.fromJson(response);
   }
 
-  Future<void> updateCamera(String id, String name, String rtspUrl) async {
+  Future<void> updateCamera(
+    String cameraId,
+    String name,
+    String description,
+    String rtspUrl,
+  ) async {
     await _client
         .from('cameras')
-        .update({'name': name, 'rtsp_url': rtspUrl})
-        .eq('id', id);
+        .update({'name': name, 'description': description, 'rtsp_url': rtspUrl})
+        .eq('camera_id', cameraId);
   }
 
-  Future<void> deleteCamera(String id) async {
-    await _client.from('cameras').delete().eq('id', id);
+  Future<void> deleteCamera(String cameraId) async {
+    await _client.from('cameras').delete().eq('camera_id', cameraId);
   }
 
   // Events CRUD
   Future<List<Event>> getEvents() async {
-    final response = await _client.from('events').select();
+    final response = await _client
+        .from('events')
+        .select()
+        .eq("user_id", _user_id);
+    // print(response);
     return response.map((json) => Event.fromJson(json)).toList();
   }
 
-  Future<Event> addEvent(String name, String description) async {
+  Future<Event> addEvent(String eventDescription) async {
     final response = await _client
         .from('events')
-        .insert({'name': name, 'description': description, 'is_active': true})
+        .insert({'event_description': eventDescription, 'is_active': true})
         .select()
         .single();
+    print("Service : Event Added");
+    print(response);
     return Event.fromJson(response);
   }
 
   Future<void> updateEvent(
-    String id,
-    String name,
-    String description,
+    String eventId,
+    String eventDescription,
     bool isActive,
   ) async {
     await _client
         .from('events')
-        .update({
-          'name': name,
-          'description': description,
-          'is_active': isActive,
-        })
-        .eq('id', id);
+        .update({'event_description': eventDescription, 'is_active': isActive})
+        .eq('event_id', eventId);
   }
 
-  Future<void> deleteEvent(String id) async {
-    await _client.from('events').delete().eq('id', id);
+  Future<void> deleteEvent(String eventId) async {
+    await _client.from('events').delete().eq('event_id', eventId);
   }
 
   // Alerts
-  Future<List<Alert>> getAlerts() async {
+  Future<List<AlertLog>> getAlerts() async {
     final response = await _client
         .from('alerts')
         .select()
+        .eq("user_id", _user_id)
         .order('timestamp', ascending: false);
-    return response.map((json) => Alert.fromJson(json)).toList();
+    return response.map((json) => AlertLog.fromJson(json)).toList();
   }
 
-  Stream<List<Alert>> subscribeToAlerts() {
+  Stream<List<AlertLog>> subscribeToAlerts() {
     return _client
         .from('alerts')
-        .stream(primaryKey: ['id'])
-        .map((data) => data.map((json) => Alert.fromJson(json)).toList());
+        .stream(primaryKey: ['alert_id'])
+        .eq("user_id", _user_id)
+        .map((data) => data.map((json) => AlertLog.fromJson(json)).toList());
   }
 
   // Messages (optional storage)

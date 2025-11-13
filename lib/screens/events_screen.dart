@@ -13,59 +13,85 @@ class EventsScreen extends StatefulWidget {
 }
 
 class _EventsScreenState extends State<EventsScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _eventDescriptionController =
+      TextEditingController();
+  late Future<List<Event>> _eventsFuture;
 
   @override
   void initState() {
     super.initState();
-    context.read<EventsController>().loadEvents();
+    _eventsFuture = context.read<EventsController>().fetchEvents();
   }
 
   @override
   Widget build(BuildContext context) {
-    final eventsController = context.watch<EventsController>();
-
     return Scaffold(
       appBar: AppBar(title: const Text('Events')),
-      body: eventsController.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: eventsController.events.length,
+      body: FutureBuilder<List<Event>>(
+        future: _eventsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            final events = snapshot.data!;
+            return ListView.builder(
+              itemCount: events.length,
               itemBuilder: (context, index) {
-                final event = eventsController.events[index];
+                final event = events[index];
                 return ListTile(
-                  title: Text(event.name),
-                  subtitle: Text(event.description),
+                  title: Text(event.eventDescription),
+                  subtitle: Text(event.isActive ? 'Active' : 'Inactive'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Switch(
                         value: event.isActive,
-                        onChanged: (value) => eventsController.updateEvent(
-                          event.id,
-                          event.name,
-                          event.description,
-                          value,
-                        ),
+                        onChanged: (value) {
+                          context.read<EventsController>().updateEvent(
+                            event.eventId,
+                            event.eventDescription,
+                            value,
+                          );
+                          setState(() {
+                            _eventsFuture = context
+                                .read<EventsController>()
+                                .fetchEvents();
+                          });
+                        },
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () => eventsController.deleteEvent(event.id),
+                        onPressed: () {
+                          context.read<EventsController>().deleteEvent(
+                            event.eventId,
+                          );
+                          setState(() {
+                            _eventsFuture = context
+                                .read<EventsController>()
+                                .fetchEvents();
+                          });
+                        },
                       ),
                     ],
                   ),
                 );
               },
-            ),
+            );
+          } else {
+            return const Center(child: Text('No events found'));
+          }
+        },
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddEventDialog(context, eventsController),
+        onPressed: () => _showAddEventDialog(context),
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  void _showAddEventDialog(BuildContext context, EventsController controller) {
+  void _showAddEventDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -73,11 +99,9 @@ class _EventsScreenState extends State<EventsScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CustomTextField(controller: _nameController, label: 'Event Name'),
-            const SizedBox(height: 16),
             CustomTextField(
-              controller: _descriptionController,
-              label: 'Description',
+              controller: _eventDescriptionController,
+              label: 'Event Description',
             ),
           ],
         ),
@@ -89,15 +113,17 @@ class _EventsScreenState extends State<EventsScreen> {
           CustomButton(
             text: 'Add',
             onPressed: () {
-              if (_nameController.text.isNotEmpty &&
-                  _descriptionController.text.isNotEmpty) {
-                controller.addEvent(
-                  _nameController.text,
-                  _descriptionController.text,
+              if (_eventDescriptionController.text.isNotEmpty) {
+                context.read<EventsController>().addEvent(
+                  _eventDescriptionController.text,
                 );
-                _nameController.clear();
-                _descriptionController.clear();
+                _eventDescriptionController.clear();
                 Navigator.of(context).pop();
+                setState(() {
+                  _eventsFuture = context
+                      .read<EventsController>()
+                      .fetchEvents();
+                });
               }
             },
           ),

@@ -1,39 +1,33 @@
-class Alert {
-  final String id;
-  final String cameraId;
-  final String eventId;
+enum AlertLevel { low, medium, high }
+
+class AlertLog {
+  final String alertId;
   final String message;
   final DateTime timestamp;
-  final bool isRead;
+  final AlertLevel alertLevel;
 
-  Alert({
-    required this.id,
-    required this.cameraId,
-    required this.eventId,
+  AlertLog({
+    required this.alertId,
     required this.message,
     required this.timestamp,
-    required this.isRead,
+    required this.alertLevel,
   });
 
-  factory Alert.fromJson(Map<String, dynamic> json) {
-    return Alert(
-      id: json['id'] as String,
-      cameraId: json['camera_id'] as String,
-      eventId: json['event_id'] as String,
+  factory AlertLog.fromJson(Map<String, dynamic> json) {
+    return AlertLog(
+      alertId: json['alert_id'] as String,
       message: json['message'] as String,
       timestamp: DateTime.parse(json['timestamp'] as String),
-      isRead: json['is_read'] as bool,
+      alertLevel: json['level'] as AlertLevel,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'camera_id': cameraId,
-      'event_id': eventId,
+      'alert_id': alertId,
       'message': message,
       'timestamp': timestamp.toIso8601String(),
-      'is_read': isRead,
+      'level': alertLevel,
     };
   }
 }

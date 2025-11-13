@@ -23,9 +23,15 @@ class EventsController extends ChangeNotifier {
     }
   }
 
-  Future<void> addEvent(String name, String description) async {
+  Future<List<Event>> fetchEvents() async {
+    return await _supabaseService.getEvents();
+  }
+
+  Future<void> addEvent(String eventDescription) async {
     try {
-      final event = await _supabaseService.addEvent(name, description);
+      print("Controller : Event adding");
+      final event = await _supabaseService.addEvent(eventDescription);
+      print("Controller : Event Added");
       _events.add(event);
       notifyListeners();
     } catch (e) {
@@ -35,18 +41,16 @@ class EventsController extends ChangeNotifier {
 
   Future<void> updateEvent(
     String id,
-    String name,
-    String description,
+    String eventDescription,
     bool isActive,
   ) async {
     try {
-      await _supabaseService.updateEvent(id, name, description, isActive);
-      final index = _events.indexWhere((e) => e.id == id);
+      await _supabaseService.updateEvent(id, eventDescription, isActive);
+      final index = _events.indexWhere((e) => e.eventId == id);
       if (index != -1) {
         _events[index] = Event(
-          id: id,
-          name: name,
-          description: description,
+          eventId: id,
+          eventDescription: eventDescription,
           isActive: isActive,
           createdAt: _events[index].createdAt,
         );
@@ -60,7 +64,7 @@ class EventsController extends ChangeNotifier {
   Future<void> deleteEvent(String id) async {
     try {
       await _supabaseService.deleteEvent(id);
-      _events.removeWhere((e) => e.id == id);
+      _events.removeWhere((e) => e.eventId == id);
       notifyListeners();
     } catch (e) {
       // Handle error

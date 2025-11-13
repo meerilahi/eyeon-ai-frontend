@@ -23,9 +23,21 @@ class CamerasController extends ChangeNotifier {
     }
   }
 
-  Future<void> addCamera(String name, String rtspUrl) async {
+  Future<List<Camera>> fetchCameras() async {
+    return await _supabaseService.getCameras();
+  }
+
+  Future<void> addCamera(
+    String name,
+    String description,
+    String rtspUrl,
+  ) async {
     try {
-      final camera = await _supabaseService.addCamera(name, rtspUrl);
+      final camera = await _supabaseService.addCamera(
+        name,
+        description,
+        rtspUrl,
+      );
       _cameras.add(camera);
       notifyListeners();
     } catch (e) {
@@ -33,14 +45,20 @@ class CamerasController extends ChangeNotifier {
     }
   }
 
-  Future<void> updateCamera(String id, String name, String rtspUrl) async {
+  Future<void> updateCamera(
+    String id,
+    String name,
+    String description,
+    String rtspUrl,
+  ) async {
     try {
-      await _supabaseService.updateCamera(id, name, rtspUrl);
-      final index = _cameras.indexWhere((c) => c.id == id);
+      await _supabaseService.updateCamera(id, name, description, rtspUrl);
+      final index = _cameras.indexWhere((c) => c.cameraId == id);
       if (index != -1) {
         _cameras[index] = Camera(
-          id: id,
+          cameraId: id,
           name: name,
+          description: description,
           rtspUrl: rtspUrl,
           createdAt: _cameras[index].createdAt,
         );
@@ -54,7 +72,7 @@ class CamerasController extends ChangeNotifier {
   Future<void> deleteCamera(String id) async {
     try {
       await _supabaseService.deleteCamera(id);
-      _cameras.removeWhere((c) => c.id == id);
+      _cameras.removeWhere((c) => c.cameraId == id);
       notifyListeners();
     } catch (e) {
       // Handle error
