@@ -29,13 +29,11 @@ class EventsController extends ChangeNotifier {
 
   Future<void> addEvent(String eventDescription) async {
     try {
-      print("Controller : Event adding");
       final event = await _supabaseService.addEvent(eventDescription);
-      print("Controller : Event Added");
       _events.add(event);
       notifyListeners();
     } catch (e) {
-      // Handle error
+      // print(e);
     }
   }
 

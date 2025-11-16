@@ -11,34 +11,33 @@ class AlertsScreen extends StatefulWidget {
 }
 
 class _AlertsScreenState extends State<AlertsScreen> {
-  late Future<List<AlertLog>> _alertsFuture;
-
   @override
   void initState() {
     super.initState();
-    _alertsFuture = context.read<AlertsController>().fetchAlerts();
+
+    final alertsController = context.read<AlertsController>();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AlertsController>().subscribeToAlerts();
+      alertsController.loadAlerts();
     });
+
+    alertsController.subscribeToAlerts();
   }
 
   @override
   Widget build(BuildContext context) {
+    final alertsController = context.watch<AlertsController>();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Alerts')),
-      body: FutureBuilder<List<AlertLog>>(
-        future: _alertsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            final alerts = snapshot.data!;
-            return ListView.builder(
-              itemCount: alerts.length,
+      body: alertsController.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : alertsController.alerts.isEmpty
+          ? const Center(child: Text('No alerts found'))
+          : ListView.builder(
+              itemCount: alertsController.alerts.length,
               itemBuilder: (context, index) {
-                final alert = alerts[index];
+                final alert = alertsController.alerts[index];
                 return ListTile(
                   title: Text(alert.message),
                   subtitle: Text(alert.timestamp.toString()),
@@ -52,12 +51,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   ),
                 );
               },
-            );
-          } else {
-            return const Center(child: Text('No alerts found'));
-          }
-        },
-      ),
+            ),
     );
   }
 }

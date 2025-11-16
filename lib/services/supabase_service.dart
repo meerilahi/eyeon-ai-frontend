@@ -7,7 +7,6 @@ import '../models/message.dart';
 class SupabaseService {
   final SupabaseClient _client = Supabase.instance.client;
   final String _user_id = Supabase.instance.client.auth.currentUser?.id ?? "";
-  // final String _user_id = AuthController().user?.id ?? "";
 
   // Cameras CRUD
   Future<List<Camera>> getCameras() async {
@@ -53,7 +52,6 @@ class SupabaseService {
         .from('events')
         .select()
         .eq("user_id", _user_id);
-    // print(response);
     return response.map((json) => Event.fromJson(json)).toList();
   }
 
@@ -63,8 +61,6 @@ class SupabaseService {
         .insert({'event_description': eventDescription, 'is_active': true})
         .select()
         .single();
-    print("Service : Event Added");
-    print(response);
     return Event.fromJson(response);
   }
 
@@ -89,7 +85,7 @@ class SupabaseService {
         .from('alerts')
         .select()
         .eq("user_id", _user_id)
-        .order('timestamp', ascending: false);
+        .order('created_at', ascending: false);
     return response.map((json) => AlertLog.fromJson(json)).toList();
   }
 
@@ -97,8 +93,11 @@ class SupabaseService {
     return _client
         .from('alerts')
         .stream(primaryKey: ['alert_id'])
-        .eq("user_id", _user_id)
-        .map((data) => data.map((json) => AlertLog.fromJson(json)).toList());
+        .eq('user_id', _user_id)
+        .order('created_at')
+        .map((rows) {
+          return rows.map(AlertLog.fromJson).toList();
+        });
   }
 
   // Messages (optional storage)

@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'package:eyeon_ai_frontend/utils/app_constants.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/message.dart';
 
 class WebSocketService {
   WebSocketChannel? _channel;
-  final String _url =
-      'ws://localhost:8000/chat'; // Replace with actual backend URL
+  final String _url = AppConstants.websocketUrl;
 
   Stream<Message> connect() {
     _channel = WebSocketChannel.connect(Uri.parse(_url));

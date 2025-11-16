@@ -34,6 +34,7 @@ class AlertsController extends ChangeNotifier {
 
   void subscribeToAlerts() {
     _alertsStream = _supabaseService.subscribeToAlerts();
+
     _alertsStream!.listen((alerts) {
       _alerts = alerts;
       notifyListeners();

@@ -17,8 +17,12 @@ class AlertLog {
     return AlertLog(
       alertId: json['alert_id'] as String,
       message: json['message'] as String,
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      alertLevel: json['level'] as AlertLevel,
+      timestamp: DateTime.parse(json['created_at'] as String),
+      alertLevel: json['level'].toString().toLowerCase() == "low"
+          ? AlertLevel.low
+          : json['level'].toString().toLowerCase() == "medium"
+          ? AlertLevel.medium
+          : AlertLevel.high,
     );
   }
 
@@ -26,8 +30,8 @@ class AlertLog {
     return {
       'alert_id': alertId,
       'message': message,
-      'timestamp': timestamp.toIso8601String(),
-      'level': alertLevel,
+      'created_at': timestamp.toIso8601String(),
+      'level': alertLevel.toString(),
     };
   }
 }
