@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/cameras_controller.dart';
-import '../models/camera.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 
@@ -16,55 +15,40 @@ class _CamerasScreenState extends State<CamerasScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _rtspController = TextEditingController();
-  late Future<List<Camera>> _camerasFuture;
 
   @override
   void initState() {
     super.initState();
-    _camerasFuture = context.read<CamerasController>().fetchCameras();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CamerasController>().loadCameras();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final camerasController = context.watch<CamerasController>();
     return Scaffold(
       appBar: AppBar(title: const Text('Cameras')),
-      body: FutureBuilder<List<Camera>>(
-        future: _camerasFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            final cameras = snapshot.data!;
-            return ListView.builder(
-              itemCount: cameras.length,
+      body: camerasController.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : camerasController.cameras.isEmpty
+          ? const Center(child: Text('No cameras found'))
+          : ListView.builder(
+              itemCount: camerasController.cameras.length,
               itemBuilder: (context, index) {
-                final camera = cameras[index];
+                final camera = camerasController.cameras[index];
                 return ListTile(
                   title: Text(camera.name),
                   subtitle: Text('${camera.description}\n${camera.rtspUrl}'),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () {
-                      context.read<CamerasController>().deleteCamera(
-                        camera.cameraId,
-                      );
-                      setState(() {
-                        _camerasFuture = context
-                            .read<CamerasController>()
-                            .fetchCameras();
-                      });
+                      camerasController.deleteCamera(camera.cameraId);
                     },
                   ),
                 );
               },
-            );
-          } else {
-            return const Center(child: Text('No cameras found'));
-          }
-        },
-      ),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddCameraDialog(context),
         child: const Icon(Icons.add),
@@ -97,11 +81,11 @@ class _CamerasScreenState extends State<CamerasScreen> {
           ),
           CustomButton(
             text: 'Add',
-            onPressed: () async {
+            onPressed: () {
               if (_nameController.text.isNotEmpty &&
                   _descriptionController.text.isNotEmpty &&
                   _rtspController.text.isNotEmpty) {
-                await context.read<CamerasController>().addCamera(
+                context.read<CamerasController>().addCamera(
                   _nameController.text,
                   _descriptionController.text,
                   _rtspController.text,
@@ -110,11 +94,6 @@ class _CamerasScreenState extends State<CamerasScreen> {
                 _descriptionController.clear();
                 _rtspController.clear();
                 Navigator.of(context).pop();
-                setState(() {
-                  _camerasFuture = context
-                      .read<CamerasController>()
-                      .fetchCameras();
-                });
               }
             },
           ),

@@ -60,7 +60,6 @@ class ChatController extends ChangeNotifier {
     debugPrint('ChatController: Clearing data');
     _messages.clear();
     _isConnected = false;
-    notifyListeners();
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/chat_controller.dart';
 import 'controllers/cameras_controller.dart';
@@ -79,9 +80,11 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final User? user = context.watch<AuthController>().user;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('EyeOn AI'),
+        title: Text(user?.email ?? "Null"),
+
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -91,11 +94,11 @@ class _MainScreenState extends State<MainScreen> {
               final camerasController = context.read<CamerasController>();
               final eventsController = context.read<EventsController>();
               final alertsController = context.read<AlertsController>();
-              await authController.signOut();
               chatController.clearData();
               camerasController.clearData();
               eventsController.clearData();
               alertsController.clearData();
+              await authController.signOut();
             },
           ),
         ],

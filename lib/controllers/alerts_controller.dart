@@ -61,6 +61,5 @@ class AlertsController extends ChangeNotifier {
     _alerts.clear();
     _isLoading = false;
     _alertsStream = null;
-    notifyListeners();
   }
 }

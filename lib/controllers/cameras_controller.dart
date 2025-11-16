@@ -103,6 +103,5 @@ class CamerasController extends ChangeNotifier {
     debugPrint('CamerasController: Clearing data');
     _cameras.clear();
     _isLoading = false;
-    notifyListeners();
   }
 }

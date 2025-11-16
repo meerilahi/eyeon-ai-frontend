@@ -93,6 +93,5 @@ class EventsController extends ChangeNotifier {
     debugPrint('EventsController: Clearing data');
     _events.clear();
     _isLoading = false;
-    notifyListeners();
   }
 }

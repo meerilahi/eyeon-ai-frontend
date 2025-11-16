@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/events_controller.dart';
-import '../models/event.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 
@@ -15,31 +14,28 @@ class EventsScreen extends StatefulWidget {
 class _EventsScreenState extends State<EventsScreen> {
   final TextEditingController _eventDescriptionController =
       TextEditingController();
-  late Future<List<Event>> _eventsFuture;
 
   @override
   void initState() {
     super.initState();
-    _eventsFuture = context.read<EventsController>().fetchEvents();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<EventsController>().loadEvents();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final eventsController = context.watch<EventsController>();
     return Scaffold(
       appBar: AppBar(title: const Text('Events')),
-      body: FutureBuilder<List<Event>>(
-        future: _eventsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            final events = snapshot.data!;
-            return ListView.builder(
-              itemCount: events.length,
+      body: eventsController.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : eventsController.events.isEmpty
+          ? const Center(child: Text('No events found'))
+          : ListView.builder(
+              itemCount: eventsController.events.length,
               itemBuilder: (context, index) {
-                final event = events[index];
+                final event = eventsController.events[index];
                 return ListTile(
                   title: Text(event.eventDescription),
                   subtitle: Text(event.isActive ? 'Active' : 'Inactive'),
@@ -49,41 +45,24 @@ class _EventsScreenState extends State<EventsScreen> {
                       Switch(
                         value: event.isActive,
                         onChanged: (value) {
-                          context.read<EventsController>().updateEvent(
+                          eventsController.updateEvent(
                             event.eventId,
                             event.eventDescription,
                             value,
                           );
-                          setState(() {
-                            _eventsFuture = context
-                                .read<EventsController>()
-                                .fetchEvents();
-                          });
                         },
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete),
                         onPressed: () {
-                          context.read<EventsController>().deleteEvent(
-                            event.eventId,
-                          );
-                          setState(() {
-                            _eventsFuture = context
-                                .read<EventsController>()
-                                .fetchEvents();
-                          });
+                          eventsController.deleteEvent(event.eventId);
                         },
                       ),
                     ],
                   ),
                 );
               },
-            );
-          } else {
-            return const Center(child: Text('No events found'));
-          }
-        },
-      ),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddEventDialog(context),
         child: const Icon(Icons.add),
@@ -119,11 +98,6 @@ class _EventsScreenState extends State<EventsScreen> {
                 );
                 _eventDescriptionController.clear();
                 Navigator.of(context).pop();
-                setState(() {
-                  _eventsFuture = context
-                      .read<EventsController>()
-                      .fetchEvents();
-                });
               }
             },
           ),
