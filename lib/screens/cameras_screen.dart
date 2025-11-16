@@ -97,11 +97,11 @@ class _CamerasScreenState extends State<CamerasScreen> {
           ),
           CustomButton(
             text: 'Add',
-            onPressed: () {
+            onPressed: () async {
               if (_nameController.text.isNotEmpty &&
                   _descriptionController.text.isNotEmpty &&
                   _rtspController.text.isNotEmpty) {
-                context.read<CamerasController>().addCamera(
+                await context.read<CamerasController>().addCamera(
                   _nameController.text,
                   _descriptionController.text,
                   _rtspController.text,

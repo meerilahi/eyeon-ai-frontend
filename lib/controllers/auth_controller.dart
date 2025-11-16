@@ -35,6 +35,7 @@ class AuthController extends ChangeNotifier {
         _user = response.user;
       }
     } catch (e) {
+      debugPrint('SignUp error: $e');
       rethrow;
     } finally {
       _isLoading = false;
@@ -55,6 +56,7 @@ class AuthController extends ChangeNotifier {
         _user = response.user;
       }
     } catch (e) {
+      debugPrint('SignIn error: $e');
       rethrow;
     } finally {
       _isLoading = false;
@@ -70,10 +72,18 @@ class AuthController extends ChangeNotifier {
       await _client.auth.signOut();
       _user = null;
     } catch (e) {
+      debugPrint('SignOut error: $e');
       rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void clearData() {
+    debugPrint('AuthController: Clearing data');
+    _user = null;
+    _isLoading = false;
+    notifyListeners();
   }
 }

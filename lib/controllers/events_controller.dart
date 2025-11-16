@@ -11,11 +11,14 @@ class EventsController extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<void> loadEvents() async {
+    debugPrint('EventsController: Loading events');
     _isLoading = true;
     notifyListeners();
     try {
       _events = await _supabaseService.getEvents();
+      debugPrint('EventsController: Loaded ${_events.length} events');
     } catch (e) {
+      debugPrint('EventsController: Error loading events: $e');
       // Handle error
     } finally {
       _isLoading = false;
@@ -24,15 +27,26 @@ class EventsController extends ChangeNotifier {
   }
 
   Future<List<Event>> fetchEvents() async {
-    return await _supabaseService.getEvents();
+    debugPrint('EventsController: Fetching events');
+    try {
+      final events = await _supabaseService.getEvents();
+      debugPrint('EventsController: Fetched ${events.length} events');
+      return events;
+    } catch (e) {
+      debugPrint('EventsController: Error fetching events: $e');
+      rethrow;
+    }
   }
 
   Future<void> addEvent(String eventDescription) async {
+    debugPrint('EventsController: Adding event: $eventDescription');
     try {
       final event = await _supabaseService.addEvent(eventDescription);
       _events.add(event);
       notifyListeners();
+      debugPrint('EventsController: Added event: ${event.eventId}');
     } catch (e) {
+      debugPrint('EventsController: Error adding event: $e');
       // print(e);
     }
   }
@@ -42,6 +56,7 @@ class EventsController extends ChangeNotifier {
     String eventDescription,
     bool isActive,
   ) async {
+    debugPrint('EventsController: Updating event: $id');
     try {
       await _supabaseService.updateEvent(id, eventDescription, isActive);
       final index = _events.indexWhere((e) => e.eventId == id);
@@ -53,19 +68,31 @@ class EventsController extends ChangeNotifier {
           createdAt: _events[index].createdAt,
         );
         notifyListeners();
+        debugPrint('EventsController: Updated event: $id');
       }
     } catch (e) {
+      debugPrint('EventsController: Error updating event: $e');
       // Handle error
     }
   }
 
   Future<void> deleteEvent(String id) async {
+    debugPrint('EventsController: Deleting event: $id');
     try {
       await _supabaseService.deleteEvent(id);
       _events.removeWhere((e) => e.eventId == id);
       notifyListeners();
+      debugPrint('EventsController: Deleted event: $id');
     } catch (e) {
+      debugPrint('EventsController: Error deleting event: $e');
       // Handle error
     }
+  }
+
+  void clearData() {
+    debugPrint('EventsController: Clearing data');
+    _events.clear();
+    _isLoading = false;
+    notifyListeners();
   }
 }

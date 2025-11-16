@@ -13,7 +13,9 @@ class ChatController extends ChangeNotifier {
   bool get isConnected => _isConnected;
 
   void connect() {
+    debugPrint('ChatController: Connecting to WebSocket');
     _webSocketService.connect().listen((message) {
+      debugPrint('ChatController: Received message: ${message.content}');
       _messages.add(message);
       notifyListeners();
     });
@@ -22,6 +24,7 @@ class ChatController extends ChangeNotifier {
   }
 
   void sendMessage(String content) {
+    debugPrint('ChatController: Sending message: $content');
     final message = Message(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       type: MessageType.user,
@@ -35,13 +38,29 @@ class ChatController extends ChangeNotifier {
   }
 
   void disconnect() {
+    debugPrint('ChatController: Disconnecting from WebSocket');
     _webSocketService.disconnect();
     _isConnected = false;
     notifyListeners();
   }
 
   Future<List<Message>> fetchMessages() async {
-    return await _supabaseService.getMessages();
+    debugPrint('ChatController: Fetching messages from Supabase');
+    try {
+      final messages = await _supabaseService.getMessages();
+      debugPrint('ChatController: Fetched ${messages.length} messages');
+      return messages;
+    } catch (e) {
+      debugPrint('ChatController: Error fetching messages: $e');
+      rethrow;
+    }
+  }
+
+  void clearData() {
+    debugPrint('ChatController: Clearing data');
+    _messages.clear();
+    _isConnected = false;
+    notifyListeners();
   }
 
   @override

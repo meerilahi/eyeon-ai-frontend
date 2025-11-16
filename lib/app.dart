@@ -5,8 +5,7 @@ import 'controllers/chat_controller.dart';
 import 'controllers/cameras_controller.dart';
 import 'controllers/events_controller.dart';
 import 'controllers/alerts_controller.dart';
-import 'screens/login_screen.dart';
-import 'screens/signup_screen.dart';
+import 'screens/auth_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/cameras_screen.dart';
 import 'screens/events_screen.dart';
@@ -29,8 +28,7 @@ class App extends StatelessWidget {
         title: 'EyeOn AI',
         home: const AuthWrapper(),
         routes: {
-          '/login': (context) => const LoginScreen(),
-          '/signup': (context) => const SignupScreen(),
+          '/auth': (context) => const AuthScreen(),
           '/chat': (context) => const ChatScreen(),
           '/cameras': (context) => const CamerasScreen(),
           '/events': (context) => const EventsScreen(),
@@ -51,7 +49,7 @@ class AuthWrapper extends StatelessWidget {
     if (authController.isAuthenticated) {
       return const MainScreen();
     } else {
-      return const LoginScreen();
+      return const AuthScreen();
     }
   }
 }
@@ -89,7 +87,15 @@ class _MainScreenState extends State<MainScreen> {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               final authController = context.read<AuthController>();
+              final chatController = context.read<ChatController>();
+              final camerasController = context.read<CamerasController>();
+              final eventsController = context.read<EventsController>();
+              final alertsController = context.read<AlertsController>();
               await authController.signOut();
+              chatController.clearData();
+              camerasController.clearData();
+              eventsController.clearData();
+              alertsController.clearData();
             },
           ),
         ],

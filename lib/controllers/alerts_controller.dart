@@ -12,6 +12,7 @@ class AlertsController extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   void loadAlerts() {
+    debugPrint('AlertsController: Loading alerts');
     _isLoading = true;
     notifyListeners();
     _supabaseService
@@ -20,8 +21,10 @@ class AlertsController extends ChangeNotifier {
           _alerts = alerts;
           _isLoading = false;
           notifyListeners();
+          debugPrint('AlertsController: Loaded ${_alerts.length} alerts');
         })
         .catchError((e) {
+          debugPrint('AlertsController: Error loading alerts: $e');
           _isLoading = false;
           notifyListeners();
           // Handle error
@@ -29,15 +32,35 @@ class AlertsController extends ChangeNotifier {
   }
 
   Future<List<AlertLog>> fetchAlerts() async {
-    return await _supabaseService.getAlerts();
+    debugPrint('AlertsController: Fetching alerts');
+    try {
+      final alerts = await _supabaseService.getAlerts();
+      debugPrint('AlertsController: Fetched ${alerts.length} alerts');
+      return alerts;
+    } catch (e) {
+      debugPrint('AlertsController: Error fetching alerts: $e');
+      rethrow;
+    }
   }
 
   void subscribeToAlerts() {
+    debugPrint('AlertsController: Subscribing to alerts');
     _alertsStream = _supabaseService.subscribeToAlerts();
 
     _alertsStream!.listen((alerts) {
+      debugPrint(
+        'AlertsController: Received ${alerts.length} alerts from stream',
+      );
       _alerts = alerts;
       notifyListeners();
     });
+  }
+
+  void clearData() {
+    debugPrint('AlertsController: Clearing data');
+    _alerts.clear();
+    _isLoading = false;
+    _alertsStream = null;
+    notifyListeners();
   }
 }
