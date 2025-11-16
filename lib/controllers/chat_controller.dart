@@ -5,7 +5,13 @@ import '../services/supabase_service.dart';
 
 class ChatController extends ChangeNotifier {
   final WebSocketService _webSocketService = WebSocketService();
-  final SupabaseService _supabaseService = SupabaseService();
+  SupabaseService? _supabaseService;
+  ChatController(this._supabaseService);
+
+  set supabaseService(SupabaseService? service) {
+    _supabaseService = service;
+  }
+
   final List<Message> _messages = [];
   bool _isConnected = false;
 
@@ -33,7 +39,7 @@ class ChatController extends ChangeNotifier {
     );
     _messages.add(message);
     _webSocketService.sendMessage(content);
-    _supabaseService.saveMessage(message); // Optional
+    _supabaseService?.saveMessage(message); // Optional
     notifyListeners();
   }
 
@@ -47,7 +53,7 @@ class ChatController extends ChangeNotifier {
   Future<List<Message>> fetchMessages() async {
     debugPrint('ChatController: Fetching messages from Supabase');
     try {
-      final messages = await _supabaseService.getMessages();
+      final messages = await _supabaseService!.getMessages();
       debugPrint('ChatController: Fetched ${messages.length} messages');
       return messages;
     } catch (e) {

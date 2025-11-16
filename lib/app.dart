@@ -6,6 +6,7 @@ import 'controllers/chat_controller.dart';
 import 'controllers/cameras_controller.dart';
 import 'controllers/events_controller.dart';
 import 'controllers/alerts_controller.dart';
+import 'services/supabase_service.dart';
 import 'screens/auth_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/cameras_screen.dart';
@@ -20,10 +21,29 @@ class App extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthController()),
-        ChangeNotifierProvider(create: (_) => ChatController()),
-        ChangeNotifierProvider(create: (_) => CamerasController()),
-        ChangeNotifierProvider(create: (_) => EventsController()),
-        ChangeNotifierProvider(create: (_) => AlertsController()),
+        ProxyProvider<AuthController, SupabaseService>(
+          update: (_, auth, _) => SupabaseService(auth.user),
+        ),
+        ChangeNotifierProxyProvider<SupabaseService, ChatController>(
+          create: (_) => ChatController(null), // Will be updated by update
+          update: (_, supabase, controller) =>
+              controller!..supabaseService = supabase,
+        ),
+        ChangeNotifierProxyProvider<SupabaseService, CamerasController>(
+          create: (_) => CamerasController(null), // Will be updated by update
+          update: (_, supabase, controller) =>
+              controller!..supabaseService = supabase,
+        ),
+        ChangeNotifierProxyProvider<SupabaseService, EventsController>(
+          create: (_) => EventsController(null), // Will be updated by update
+          update: (_, supabase, controller) =>
+              controller!..supabaseService = supabase,
+        ),
+        ChangeNotifierProxyProvider<SupabaseService, AlertsController>(
+          create: (_) => AlertsController(null), // Will be updated by update
+          update: (_, supabase, controller) =>
+              controller!..supabaseService = supabase,
+        ),
       ],
       child: MaterialApp(
         title: 'EyeOn AI',

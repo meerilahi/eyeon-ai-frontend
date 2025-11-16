@@ -3,7 +3,13 @@ import '../models/alert.dart';
 import '../services/supabase_service.dart';
 
 class AlertsController extends ChangeNotifier {
-  final SupabaseService _supabaseService = SupabaseService();
+  SupabaseService? _supabaseService;
+  AlertsController(this._supabaseService);
+
+  set supabaseService(SupabaseService? service) {
+    _supabaseService = service;
+  }
+
   List<AlertLog> _alerts = [];
   bool _isLoading = false;
   Stream<List<AlertLog>>? _alertsStream;
@@ -15,7 +21,7 @@ class AlertsController extends ChangeNotifier {
     debugPrint('AlertsController: Loading alerts');
     _isLoading = true;
     notifyListeners();
-    _supabaseService
+    _supabaseService!
         .getAlerts()
         .then((alerts) {
           _alerts = alerts;
@@ -34,7 +40,7 @@ class AlertsController extends ChangeNotifier {
   Future<List<AlertLog>> fetchAlerts() async {
     debugPrint('AlertsController: Fetching alerts');
     try {
-      final alerts = await _supabaseService.getAlerts();
+      final alerts = await _supabaseService!.getAlerts();
       debugPrint('AlertsController: Fetched ${alerts.length} alerts');
       return alerts;
     } catch (e) {
@@ -45,7 +51,7 @@ class AlertsController extends ChangeNotifier {
 
   void subscribeToAlerts() {
     debugPrint('AlertsController: Subscribing to alerts');
-    _alertsStream = _supabaseService.subscribeToAlerts();
+    _alertsStream = _supabaseService!.subscribeToAlerts();
 
     _alertsStream!.listen((alerts) {
       debugPrint(

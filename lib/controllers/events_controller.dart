@@ -3,7 +3,13 @@ import '../models/event.dart';
 import '../services/supabase_service.dart';
 
 class EventsController extends ChangeNotifier {
-  final SupabaseService _supabaseService = SupabaseService();
+  SupabaseService? _supabaseService;
+  EventsController(this._supabaseService);
+
+  set supabaseService(SupabaseService? service) {
+    _supabaseService = service;
+  }
+
   List<Event> _events = [];
   bool _isLoading = false;
 
@@ -15,7 +21,7 @@ class EventsController extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      _events = await _supabaseService.getEvents();
+      _events = await _supabaseService!.getEvents();
       debugPrint('EventsController: Loaded ${_events.length} events');
     } catch (e) {
       debugPrint('EventsController: Error loading events: $e');
@@ -29,7 +35,7 @@ class EventsController extends ChangeNotifier {
   Future<List<Event>> fetchEvents() async {
     debugPrint('EventsController: Fetching events');
     try {
-      final events = await _supabaseService.getEvents();
+      final events = await _supabaseService!.getEvents();
       debugPrint('EventsController: Fetched ${events.length} events');
       return events;
     } catch (e) {
@@ -41,7 +47,7 @@ class EventsController extends ChangeNotifier {
   Future<void> addEvent(String eventDescription) async {
     debugPrint('EventsController: Adding event: $eventDescription');
     try {
-      final event = await _supabaseService.addEvent(eventDescription);
+      final event = await _supabaseService!.addEvent(eventDescription);
       _events.add(event);
       notifyListeners();
       debugPrint('EventsController: Added event: ${event.eventId}');
@@ -58,7 +64,7 @@ class EventsController extends ChangeNotifier {
   ) async {
     debugPrint('EventsController: Updating event: $id');
     try {
-      await _supabaseService.updateEvent(id, eventDescription, isActive);
+      await _supabaseService!.updateEvent(id, eventDescription, isActive);
       final index = _events.indexWhere((e) => e.eventId == id);
       if (index != -1) {
         _events[index] = Event(
@@ -79,7 +85,7 @@ class EventsController extends ChangeNotifier {
   Future<void> deleteEvent(String id) async {
     debugPrint('EventsController: Deleting event: $id');
     try {
-      await _supabaseService.deleteEvent(id);
+      await _supabaseService!.deleteEvent(id);
       _events.removeWhere((e) => e.eventId == id);
       notifyListeners();
       debugPrint('EventsController: Deleted event: $id');

@@ -3,7 +3,13 @@ import '../models/camera.dart';
 import '../services/supabase_service.dart';
 
 class CamerasController extends ChangeNotifier {
-  final SupabaseService _supabaseService = SupabaseService();
+  SupabaseService? _supabaseService;
+  CamerasController(this._supabaseService);
+
+  set supabaseService(SupabaseService? service) {
+    _supabaseService = service;
+  }
+
   List<Camera> _cameras = [];
   bool _isLoading = false;
 
@@ -15,7 +21,7 @@ class CamerasController extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      _cameras = await _supabaseService.getCameras();
+      _cameras = await _supabaseService!.getCameras();
       debugPrint('CamerasController: Loaded ${_cameras.length} cameras');
     } catch (e) {
       debugPrint('CamerasController: Error loading cameras: $e');
@@ -29,7 +35,7 @@ class CamerasController extends ChangeNotifier {
   Future<List<Camera>> fetchCameras() async {
     debugPrint('CamerasController: Fetching cameras');
     try {
-      final cameras = await _supabaseService.getCameras();
+      final cameras = await _supabaseService!.getCameras();
       debugPrint('CamerasController: Fetched ${cameras.length} cameras');
       return cameras;
     } catch (e) {
@@ -45,7 +51,7 @@ class CamerasController extends ChangeNotifier {
   ) async {
     debugPrint('CamerasController: Adding camera: $name');
     try {
-      final camera = await _supabaseService.addCamera(
+      final camera = await _supabaseService!.addCamera(
         name,
         description,
         rtspUrl,
@@ -67,7 +73,7 @@ class CamerasController extends ChangeNotifier {
   ) async {
     debugPrint('CamerasController: Updating camera: $id');
     try {
-      await _supabaseService.updateCamera(id, name, description, rtspUrl);
+      await _supabaseService!.updateCamera(id, name, description, rtspUrl);
       final index = _cameras.indexWhere((c) => c.cameraId == id);
       if (index != -1) {
         _cameras[index] = Camera(
@@ -89,7 +95,7 @@ class CamerasController extends ChangeNotifier {
   Future<void> deleteCamera(String id) async {
     debugPrint('CamerasController: Deleting camera: $id');
     try {
-      await _supabaseService.deleteCamera(id);
+      await _supabaseService!.deleteCamera(id);
       _cameras.removeWhere((c) => c.cameraId == id);
       notifyListeners();
       debugPrint('CamerasController: Deleted camera: $id');

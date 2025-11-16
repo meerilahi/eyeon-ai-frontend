@@ -7,15 +7,19 @@ import '../models/message.dart';
 
 class SupabaseService {
   final SupabaseClient _client = Supabase.instance.client;
-  final String _user_id = Supabase.instance.client.auth.currentUser?.id ?? "";
+  final User? _user;
+
+  SupabaseService(this._user);
+
+  String get _userId => _user?.id ?? "";
 
   // Cameras CRUD
   Future<List<Camera>> getCameras() async {
-    debugPrint('SupabaseService: Fetching cameras for user: $_user_id');
+    debugPrint('SupabaseService: Fetching cameras for user: $_userId');
     final response = await _client
         .from('cameras')
         .select()
-        .eq("user_id", _user_id);
+        .eq("user_id", _userId);
     final cameras = response.map((json) => Camera.fromJson(json)).toList();
     debugPrint('SupabaseService: Fetched ${cameras.length} cameras');
     return cameras;
@@ -59,11 +63,11 @@ class SupabaseService {
 
   // Events CRUD
   Future<List<Event>> getEvents() async {
-    debugPrint('SupabaseService: Fetching events for user: $_user_id');
+    debugPrint('SupabaseService: Fetching events for user: $_userId');
     final response = await _client
         .from('events')
         .select()
-        .eq("user_id", _user_id);
+        .eq("user_id", _userId);
     final events = response.map((json) => Event.fromJson(json)).toList();
     debugPrint('SupabaseService: Fetched ${events.length} events');
     return events;
@@ -102,11 +106,11 @@ class SupabaseService {
 
   // Alerts
   Future<List<AlertLog>> getAlerts() async {
-    debugPrint('SupabaseService: Fetching alerts for user: $_user_id');
+    debugPrint('SupabaseService: Fetching alerts for user: $_userId');
     final response = await _client
         .from('alerts')
         .select()
-        .eq("user_id", _user_id)
+        .eq("user_id", _userId)
         .order('created_at', ascending: false);
     final alerts = response.map((json) => AlertLog.fromJson(json)).toList();
     debugPrint('SupabaseService: Fetched ${alerts.length} alerts');
@@ -114,11 +118,11 @@ class SupabaseService {
   }
 
   Stream<List<AlertLog>> subscribeToAlerts() {
-    debugPrint('SupabaseService: Subscribing to alerts for user: $_user_id');
+    debugPrint('SupabaseService: Subscribing to alerts for user: $_userId');
     return _client
         .from('alerts')
         .stream(primaryKey: ['alert_id'])
-        .eq('user_id', _user_id)
+        .eq('user_id', _userId)
         .order('created_at')
         .map((rows) {
           final alerts = rows.map(AlertLog.fromJson).toList();
