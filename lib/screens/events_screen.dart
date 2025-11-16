@@ -27,44 +27,118 @@ class _EventsScreenState extends State<EventsScreen> {
   Widget build(BuildContext context) {
     final eventsController = context.watch<EventsController>();
     return Scaffold(
-      appBar: AppBar(title: const Text('Events')),
       body: eventsController.isLoading
           ? const Center(child: CircularProgressIndicator())
           : eventsController.events.isEmpty
-          ? const Center(child: Text('No events found'))
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.event_note, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('No events found'),
+                  SizedBox(height: 8),
+                  Text(
+                    'Create your first event!',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            )
           : ListView.builder(
+              padding: const EdgeInsets.all(16),
               itemCount: eventsController.events.length,
               itemBuilder: (context, index) {
                 final event = eventsController.events[index];
-                return ListTile(
-                  title: Text(event.eventDescription),
-                  subtitle: Text(event.isActive ? 'Active' : 'Inactive'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Switch(
-                        value: event.isActive,
-                        onChanged: (value) {
-                          eventsController.updateEvent(
-                            event.eventId,
-                            event.eventDescription,
-                            value,
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          eventsController.deleteEvent(event.eventId);
-                        },
-                      ),
-                    ],
+                return Card(
+                  elevation: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.event,
+                              color: event.isActive
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.grey,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                event.eventDescription,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  decoration: event.isActive
+                                      ? null
+                                      : TextDecoration.lineThrough,
+                                  color: event.isActive
+                                      ? Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.color
+                                      : Colors.grey,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                eventsController.deleteEvent(event.eventId);
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Text(
+                              'Status: ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyMedium?.color,
+                              ),
+                            ),
+                            Text(
+                              event.isActive ? 'Active' : 'Inactive',
+                              style: TextStyle(
+                                color: event.isActive
+                                    ? Colors.green
+                                    : Colors.red,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Spacer(),
+                            Switch(
+                              value: event.isActive,
+                              activeColor: Theme.of(context).primaryColor,
+                              onChanged: (value) {
+                                eventsController.updateEvent(
+                                  event.eventId,
+                                  event.eventDescription,
+                                  value,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddEventDialog(context),
+        backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add),
       ),
     );
@@ -74,15 +148,26 @@ class _EventsScreenState extends State<EventsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Event'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
           children: [
-            CustomTextField(
-              controller: _eventDescriptionController,
-              label: 'Event Description',
-            ),
+            Icon(Icons.event, color: Theme.of(context).primaryColor),
+            const SizedBox(width: 8),
+            const Text('Add Event'),
           ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CustomTextField(
+                controller: _eventDescriptionController,
+                label: 'Event Description',
+                prefixIcon: const Icon(Icons.description),
+                hint: 'Enter event details...',
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(

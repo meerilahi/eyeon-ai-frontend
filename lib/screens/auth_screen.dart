@@ -76,46 +76,87 @@ class _AuthScreenState extends State<AuthScreen> {
     final authController = context.watch<AuthController>();
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isLogin ? 'Login' : 'Sign Up')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(
+        title: Text(_isLogin ? 'Login' : 'Sign Up'),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CustomTextField(
-              controller: _emailController,
-              label: 'Email',
-              keyboardType: TextInputType.emailAddress,
+            const SizedBox(height: 40),
+            Icon(
+              _isLogin ? Icons.login : Icons.person_add,
+              size: 80,
+              color: Theme.of(context).primaryColor,
             ),
-            const SizedBox(height: 16),
-            CustomTextField(
-              controller: _passwordController,
-              label: 'Password',
-              obscureText: true,
-            ),
-            const SizedBox(height: 16),
-            if (!_isLogin)
-              CustomTextField(
-                controller: _confirmPasswordController,
-                label: 'Confirm Password',
-                obscureText: true,
+            const SizedBox(height: 24),
+            Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-            if (!_isLogin) const SizedBox(height: 16),
-            if (_errorMessage != null)
-              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 16),
-            CustomButton(
-              text: _isLogin ? 'Login' : 'Sign Up',
-              onPressed: _authenticate,
-              isLoading: authController.isLoading,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  children: [
+                    CustomTextField(
+                      controller: _emailController,
+                      label: 'Email',
+                      keyboardType: TextInputType.emailAddress,
+                      prefixIcon: const Icon(Icons.email),
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: _passwordController,
+                      label: 'Password',
+                      obscureText: true,
+                      prefixIcon: const Icon(Icons.lock),
+                    ),
+                    const SizedBox(height: 16),
+                    if (!_isLogin)
+                      CustomTextField(
+                        controller: _confirmPasswordController,
+                        label: 'Confirm Password',
+                        obscureText: true,
+                        prefixIcon: const Icon(Icons.lock_outline),
+                      ),
+                    if (!_isLogin) const SizedBox(height: 16),
+                    if (_errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                    CustomButton(
+                      text: _isLogin ? 'Login' : 'Sign Up',
+                      onPressed: _authenticate,
+                      isLoading: authController.isLoading,
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             TextButton(
               onPressed: () => setState(() => _isLogin = !_isLogin),
               child: Text(
                 _isLogin
                     ? 'Don\'t have an account? Sign up'
                     : 'Already have an account? Log in',
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],

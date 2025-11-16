@@ -12,6 +12,20 @@ import 'screens/chat_screen.dart';
 import 'screens/cameras_screen.dart';
 import 'screens/events_screen.dart';
 import 'screens/alerts_screen.dart';
+import 'utils/theme_constants.dart';
+
+class ThemeProvider extends ChangeNotifier {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  ThemeMode get themeMode => _themeMode;
+
+  void toggleTheme() {
+    _themeMode = _themeMode == ThemeMode.light
+        ? ThemeMode.dark
+        : ThemeMode.light;
+    notifyListeners();
+  }
+}
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -20,15 +34,12 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthController()),
         ProxyProvider<AuthController, SupabaseService>(
           update: (_, auth, _) => SupabaseService(auth.user),
         ),
-        ChangeNotifierProxyProvider<SupabaseService, ChatController>(
-          create: (_) => ChatController(null), // Will be updated by update
-          update: (_, supabase, controller) =>
-              controller!..supabaseService = supabase,
-        ),
+        ChangeNotifierProvider(create: (_) => ChatController()),
         ChangeNotifierProxyProvider<SupabaseService, CamerasController>(
           create: (_) => CamerasController(null), // Will be updated by update
           update: (_, supabase, controller) =>
@@ -45,15 +56,22 @@ class App extends StatelessWidget {
               controller!..supabaseService = supabase,
         ),
       ],
-      child: MaterialApp(
-        title: 'EyeOn AI',
-        home: const AuthWrapper(),
-        routes: {
-          '/auth': (context) => const AuthScreen(),
-          '/chat': (context) => const ChatScreen(),
-          '/cameras': (context) => const CamerasScreen(),
-          '/events': (context) => const EventsScreen(),
-          '/alerts': (context) => const AlertsScreen(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'EyeOn AI',
+            theme: ThemeConstants.lightTheme,
+            darkTheme: ThemeConstants.darkTheme,
+            themeMode: themeProvider.themeMode,
+            home: const AuthWrapper(),
+            routes: {
+              '/auth': (context) => const AuthScreen(),
+              '/chat': (context) => const ChatScreen(),
+              '/cameras': (context) => const CamerasScreen(),
+              '/events': (context) => const EventsScreen(),
+              '/alerts': (context) => const AlertsScreen(),
+            },
+          );
         },
       ),
     );
@@ -100,12 +118,19 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final User? user = context.watch<AuthController>().user;
+    final themeProvider = context.watch<ThemeProvider>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(user?.email ?? "Null"),
-
+        title: Text("EyeOn AI"),
         actions: [
+          IconButton(
+            icon: Icon(
+              themeProvider.themeMode == ThemeMode.light
+                  ? Icons.dark_mode
+                  : Icons.light_mode,
+            ),
+            onPressed: () => themeProvider.toggleTheme(),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -135,7 +160,9 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: Colors.red,
+        // unselectedItemColor: Colors.redAccent,
+        // unselectedIconTheme: IconThemeData(),
         onTap: _onItemTapped,
       ),
     );

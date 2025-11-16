@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/message.dart';
 import '../services/websocket_service.dart';
-import '../services/supabase_service.dart';
 
 class ChatController extends ChangeNotifier {
   final WebSocketService _webSocketService = WebSocketService();
-  SupabaseService? _supabaseService;
-  ChatController(this._supabaseService);
-
-  set supabaseService(SupabaseService? service) {
-    _supabaseService = service;
-  }
 
   final List<Message> _messages = [];
   bool _isConnected = false;
@@ -19,7 +12,7 @@ class ChatController extends ChangeNotifier {
   bool get isConnected => _isConnected;
 
   void connect() {
-    debugPrint('ChatController: Connecting to WebSocket');
+    debugPrint('ChatController: Connecting to WebSocket (simulated)');
     _webSocketService.connect().listen((message) {
       debugPrint('ChatController: Received message: ${message.content}');
       _messages.add(message);
@@ -39,7 +32,6 @@ class ChatController extends ChangeNotifier {
     );
     _messages.add(message);
     _webSocketService.sendMessage(content);
-    _supabaseService?.saveMessage(message); // Optional
     notifyListeners();
   }
 
@@ -51,15 +43,9 @@ class ChatController extends ChangeNotifier {
   }
 
   Future<List<Message>> fetchMessages() async {
-    debugPrint('ChatController: Fetching messages from Supabase');
-    try {
-      final messages = await _supabaseService!.getMessages();
-      debugPrint('ChatController: Fetched ${messages.length} messages');
-      return messages;
-    } catch (e) {
-      debugPrint('ChatController: Error fetching messages: $e');
-      rethrow;
-    }
+    debugPrint('ChatController: Chat history will be provided by WebSocket');
+    // Return empty list since chat history comes from WebSocket
+    return [];
   }
 
   void clearData() {

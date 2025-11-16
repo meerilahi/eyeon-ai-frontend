@@ -31,11 +31,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chat with AI Agent'),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(
               chatController.isConnected ? Icons.wifi : Icons.wifi_off,
+              color: chatController.isConnected ? Colors.green : Colors.red,
             ),
             onPressed: () {
               if (chatController.isConnected) {
@@ -56,20 +57,104 @@ class _ChatScreenState extends State<ChatScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                  return Center(
+                    child: Card(
+                      color: Colors.red.withOpacity(0.1),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text('Error: ${snapshot.error}'),
+                      ),
+                    ),
+                  );
                 } else if (snapshot.hasData) {
                   final messages = snapshot.data!;
+                  if (messages.isEmpty) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            size: 64,
+                            color: Colors.grey,
+                          ),
+                          SizedBox(height: 16),
+                          Text('No messages yet. Start chatting!'),
+                        ],
+                      ),
+                    );
+                  }
                   return ListView.builder(
+                    padding: const EdgeInsets.all(16),
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       final message = messages[index];
-                      return ListTile(
-                        title: Text(message.content),
-                        subtitle: Text(message.timestamp.toString()),
-                        leading: Icon(
-                          message.type == MessageType.user
-                              ? Icons.person
-                              : Icons.smart_toy,
+                      final isUser = message.type == MessageType.user;
+                      return Align(
+                        alignment: isUser
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Card(
+                          elevation: 4,
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          color: isUser
+                              ? Theme.of(context).primaryColor
+                              : Theme.of(context).cardColor,
+                          child: Container(
+                            constraints: BoxConstraints(
+                              maxWidth: MediaQuery.of(context).size.width * 0.7,
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      isUser ? Icons.person : Icons.smart_toy,
+                                      size: 20,
+                                      color: isUser
+                                          ? Colors.white
+                                          : Theme.of(context).primaryColor,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      isUser ? 'You' : 'AI Agent',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: isUser
+                                            ? Colors.white
+                                            : Theme.of(
+                                                context,
+                                              ).textTheme.bodyLarge?.color,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  message.content,
+                                  style: TextStyle(
+                                    color: isUser
+                                        ? Colors.white
+                                        : Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  message.timestamp.toString().split('.')[0],
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isUser
+                                        ? Colors.white70
+                                        : Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       );
                     },
@@ -80,17 +165,22 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              border: Border(top: BorderSide(color: Colors.grey.shade300)),
+            ),
             child: Row(
               children: [
                 Expanded(
                   child: CustomTextField(
                     controller: _messageController,
                     label: 'Type your message',
+                    prefixIcon: const Icon(Icons.message),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 CustomButton(
                   text: 'Send',
                   onPressed: () {

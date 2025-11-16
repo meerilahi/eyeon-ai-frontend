@@ -132,19 +132,4 @@ class SupabaseService {
           return alerts;
         });
   }
-
-  // Messages (optional storage)
-  Future<void> saveMessage(Message message) async {
-    debugPrint('SupabaseService: Saving message');
-    await _client.from('messages').insert(message.toJson());
-    debugPrint('SupabaseService: Saved message');
-  }
-
-  Future<List<Message>> getMessages() async {
-    debugPrint('SupabaseService: Fetching messages');
-    final response = await _client.from('messages').select().order('timestamp');
-    final messages = response.map((json) => Message.fromJson(json)).toList();
-    debugPrint('SupabaseService: Fetched ${messages.length} messages');
-    return messages;
-  }
 }
