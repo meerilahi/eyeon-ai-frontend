@@ -1,3 +1,4 @@
+import 'package:eyeon_ai_frontend/widgets/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/cameras_controller.dart';
@@ -28,6 +29,8 @@ class _CamerasScreenState extends State<CamerasScreen> {
   Widget build(BuildContext context) {
     final camerasController = context.watch<CamerasController>();
     return Scaffold(
+      appBar: AppBar(title: Text("Cameras")),
+      drawer: CustomDrawer(),
       body: camerasController.isLoading
           ? const Center(child: CircularProgressIndicator())
           : camerasController.cameras.isEmpty
@@ -52,13 +55,16 @@ class _CamerasScreenState extends State<CamerasScreen> {
               itemBuilder: (context, index) {
                 final camera = camerasController.cameras[index];
                 return Card(
-                  elevation: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
+                  elevation: 1,
+                  margin: const EdgeInsets.only(bottom: 8),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 1,
+                      horizontal: 5,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -73,7 +79,6 @@ class _CamerasScreenState extends State<CamerasScreen> {
                               child: Text(
                                 camera.name,
                                 style: const TextStyle(
-                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -95,7 +100,7 @@ class _CamerasScreenState extends State<CamerasScreen> {
                             ).textTheme.bodyMedium?.color,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
                         Text(
                           camera.rtspUrl,
                           style: TextStyle(

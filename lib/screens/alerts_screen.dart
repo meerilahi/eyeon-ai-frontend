@@ -1,3 +1,4 @@
+import 'package:eyeon_ai_frontend/widgets/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/alerts_controller.dart';
@@ -29,6 +30,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
     final alertsController = context.watch<AlertsController>();
 
     return Scaffold(
+      appBar: AppBar(title: Text("Alert logs")),
+      drawer: CustomDrawer(),
       body: alertsController.isLoading
           ? const Center(child: CircularProgressIndicator())
           : alertsController.alerts.isEmpty
@@ -53,81 +56,56 @@ class _AlertsScreenState extends State<AlertsScreen> {
               itemBuilder: (context, index) {
                 final alert = alertsController.alerts[index];
                 Color alertColor;
-                String levelText;
                 switch (alert.alertLevel) {
                   case AlertLevel.low:
                     alertColor = Colors.green;
-                    levelText = 'Low';
                     break;
                   case AlertLevel.medium:
                     alertColor = Colors.amber;
-                    levelText = 'Medium';
                     break;
                   case AlertLevel.high:
                     alertColor = Colors.red;
-                    levelText = 'High';
                     break;
                 }
-                return Card(
-                  elevation: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                color: alertColor,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              'Alert Level: $levelText',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: alertColor,
-                              ),
-                            ),
-                          ],
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: alertColor,
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(width: 10),
                         Text(
                           alert.message,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             color: Theme.of(context).textTheme.bodyLarge?.color,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.access_time,
-                              size: 16,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              alert.timestamp.toString().split('.')[0],
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.access_time, size: 16, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Text(
+                          alert.timestamp.toString().split('.')[0],
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     ),
-                  ),
+                    Divider(),
+                  ],
                 );
               },
             ),

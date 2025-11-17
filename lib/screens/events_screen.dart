@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../controllers/events_controller.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
+import '../widgets/custom_drawer.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -27,6 +28,8 @@ class _EventsScreenState extends State<EventsScreen> {
   Widget build(BuildContext context) {
     final eventsController = context.watch<EventsController>();
     return Scaffold(
+      appBar: AppBar(title: const Text('Events')),
+      drawer: const CustomDrawer(),
       body: eventsController.isLoading
           ? const Center(child: CircularProgressIndicator())
           : eventsController.events.isEmpty
@@ -51,13 +54,16 @@ class _EventsScreenState extends State<EventsScreen> {
               itemBuilder: (context, index) {
                 final event = eventsController.events[index];
                 return Card(
-                  elevation: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
+                  elevation: 1,
+                  margin: const EdgeInsets.only(bottom: 8),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 1,
+                      horizontal: 5,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -74,7 +80,6 @@ class _EventsScreenState extends State<EventsScreen> {
                               child: Text(
                                 event.eventDescription,
                                 style: TextStyle(
-                                  fontSize: 16,
                                   fontWeight: FontWeight.w500,
                                   decoration: event.isActive
                                       ? null
@@ -95,7 +100,7 @@ class _EventsScreenState extends State<EventsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 3),
                         Row(
                           children: [
                             Text(

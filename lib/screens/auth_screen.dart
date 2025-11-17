@@ -76,92 +76,181 @@ class _AuthScreenState extends State<AuthScreen> {
     final authController = context.watch<AuthController>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isLogin ? 'Login' : 'Sign Up'),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 40),
-            Icon(
-              _isLogin ? Icons.login : Icons.person_add,
-              size: 80,
-              color: Theme.of(context).primaryColor,
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // ---------- TOP CURVED BLUE BACKGROUND ----------
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ClipPath(
+              clipper: _TopCurveClipper(),
+              child: Container(height: 200, color: Colors.red),
             ),
-            const SizedBox(height: 24),
-            Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  children: [
-                    CustomTextField(
-                      controller: _emailController,
-                      label: 'Email',
-                      keyboardType: TextInputType.emailAddress,
-                      prefixIcon: const Icon(Icons.email),
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextField(
-                      controller: _passwordController,
-                      label: 'Password',
-                      obscureText: true,
-                      prefixIcon: const Icon(Icons.lock),
-                    ),
-                    const SizedBox(height: 16),
-                    if (!_isLogin)
-                      CustomTextField(
-                        controller: _confirmPasswordController,
-                        label: 'Confirm Password',
-                        obscureText: true,
-                        prefixIcon: const Icon(Icons.lock_outline),
-                      ),
-                    if (!_isLogin) const SizedBox(height: 16),
-                    if (_errorMessage != null)
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(color: Colors.red),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    const SizedBox(height: 24),
-                    CustomButton(
-                      text: _isLogin ? 'Login' : 'Sign Up',
-                      onPressed: _authenticate,
-                      isLoading: authController.isLoading,
-                    ),
-                  ],
+          ),
+
+          // ---------- BOTTOM CURVED BLUE BACKGROUND ----------
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: ClipPath(
+              clipper: _BottomCurveClipper(),
+              child: Container(height: 150, color: Colors.red),
+            ),
+          ),
+
+          // -------------- CONTENT -----------------
+          SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
+            child: Column(
+              children: [
+                const SizedBox(height: 80),
+
+                // ---------- LOGO ----------
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.white,
+                  child: const Icon(
+                    Icons.remove_red_eye,
+                    size: 45,
+                    color: Colors.red,
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            TextButton(
-              onPressed: () => setState(() => _isLogin = !_isLogin),
-              child: Text(
-                _isLogin
-                    ? 'Don\'t have an account? Sign up'
-                    : 'Already have an account? Log in',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 12),
+
+                Text(
+                  "EyeOn AI",
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.grey.shade900,
+                  ),
                 ),
-              ),
+
+                const SizedBox(height: 40),
+
+                // ---------- TEXT FIELDS ----------
+                CustomTextField(
+                  controller: _emailController,
+                  label: "Email",
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: const Icon(Icons.email),
+                ),
+                const SizedBox(height: 18),
+
+                CustomTextField(
+                  controller: _passwordController,
+                  label: "Password",
+                  obscureText: true,
+                  prefixIcon: const Icon(Icons.lock),
+                ),
+                const SizedBox(height: 18),
+
+                if (!_isLogin)
+                  CustomTextField(
+                    controller: _confirmPasswordController,
+                    label: "Confirm Password",
+                    obscureText: true,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                  ),
+
+                const SizedBox(height: 18),
+
+                // ---------- ERROR MESSAGE ----------
+                if (_errorMessage != null)
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+
+                const SizedBox(height: 25),
+
+                // ---------- LOGIN / SIGNUP BUTTON ----------
+                CustomButton(
+                  text: _isLogin ? "Login →" : "Sign Up",
+                  onPressed: _authenticate,
+                  isLoading: authController.isLoading,
+                ),
+
+                const SizedBox(height: 18),
+
+                // ---------- SWITCH AUTH MODE ----------
+                GestureDetector(
+                  onTap: () => setState(() => _isLogin = !_isLogin),
+                  child: RichText(
+                    text: TextSpan(
+                      text: _isLogin
+                          ? "Don't have an account? "
+                          : "Already have an account? ",
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 15,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: _isLogin ? "Sign up" : "Log in",
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+}
+
+// ------- CUSTOM CLIPPERS FOR CURVES ---------
+
+class _TopCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path p = Path();
+    p.lineTo(0, size.height * 0.75);
+    p.quadraticBezierTo(
+      size.width * 0.40,
+      size.height,
+      size.width,
+      size.height * 0.65,
+    );
+    p.lineTo(size.width, 0);
+    return p;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _BottomCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path p = Path();
+    p.moveTo(0, size.height * 0.30);
+    p.quadraticBezierTo(size.width * 0.60, 0, size.width, size.height * 0.30);
+    p.lineTo(size.width, size.height);
+    p.lineTo(0, size.height);
+    return p;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

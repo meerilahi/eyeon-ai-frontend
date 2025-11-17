@@ -3,20 +3,17 @@ import 'package:flutter/material.dart';
 class ThemeConstants {
   // === Theme Colors ===
 
-  // Accent / Primary (Electric Blue)
-  static const Color primaryColor = Color(0xFF00A8E8);
+  // Accent / Primary (Security Red)
+  static const Color primaryColor = Colors.red;
 
   // Backgrounds
-  static const Color lightBackground = Colors.white;
-  static const Color darkBackground = Color(0xFF0D1117); // Futuristic dark
+  static const Color backgroundColor = Colors.white;
 
   // Cards
-  static const Color lightCardColor = Colors.white;
-  static const Color darkCardColor = Color(0xFF161B22); // Deep navy/graphite
+  static const Color cardColor = Colors.white;
 
   // Text Colors
-  static const Color lightTextColor = Colors.black;
-  static const Color darkTextColor = Colors.white;
+  static const Color textColor = Colors.black;
 
   // System Status Colors
   static const Color errorColor = Color(0xFFFF5252);
@@ -26,24 +23,24 @@ class ThemeConstants {
   // === Light Theme ===
   static ThemeData get lightTheme => ThemeData(
     primaryColor: primaryColor,
-    scaffoldBackgroundColor: lightBackground,
+    scaffoldBackgroundColor: backgroundColor,
 
     appBarTheme: const AppBarTheme(
       backgroundColor: primaryColor,
-      foregroundColor: lightTextColor,
+      foregroundColor: Colors.white,
     ),
 
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: lightBackground,
+      backgroundColor: backgroundColor,
       selectedItemColor: primaryColor,
       unselectedItemColor: Color(0xFF757575),
     ),
 
-    cardColor: lightCardColor,
+    cardColor: cardColor,
 
     textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: lightTextColor),
-      bodyMedium: TextStyle(color: lightTextColor),
+      bodyLarge: TextStyle(color: textColor),
+      bodyMedium: TextStyle(color: textColor),
     ),
 
     inputDecorationTheme: const InputDecorationTheme(
@@ -59,43 +56,13 @@ class ThemeConstants {
         foregroundColor: Colors.white,
       ),
     ),
-  );
 
-  // === Dark Theme ===
-  static ThemeData get darkTheme => ThemeData(
-    primaryColor: primaryColor,
-    scaffoldBackgroundColor: darkBackground,
-
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF0D1117),
-      foregroundColor: darkTextColor,
-    ),
-
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Color(0xFF0D1117),
-      selectedItemColor: primaryColor,
-      unselectedItemColor: Color(0xFFBDBDBD),
-    ),
-
-    cardColor: darkCardColor,
-
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: darkTextColor),
-      bodyMedium: TextStyle(color: darkTextColor),
-    ),
-
-    inputDecorationTheme: const InputDecorationTheme(
-      border: OutlineInputBorder(),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: primaryColor),
-      ),
-    ),
-
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: primaryColor,
-        foregroundColor: darkTextColor,
-      ),
-    ),
+    drawerTheme: const DrawerThemeData(backgroundColor: backgroundColor),
   );
 }
+
+// #2596be dart cayn
+
+// #1b1b1b black
+
+// #1b1b1b black 2

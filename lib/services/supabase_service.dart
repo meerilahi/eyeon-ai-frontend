@@ -3,7 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/camera.dart';
 import '../models/event.dart';
 import '../models/alert.dart';
-import '../models/message.dart';
 
 class SupabaseService {
   final SupabaseClient _client = Supabase.instance.client;
