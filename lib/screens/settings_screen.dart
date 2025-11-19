@@ -24,7 +24,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
         title: const Text(
           'Settings',
-          style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
       ),
 

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
@@ -5,7 +6,6 @@ import '../controllers/chat_controller.dart';
 import '../controllers/cameras_controller.dart';
 import '../controllers/events_controller.dart';
 import '../controllers/alerts_controller.dart';
-import 'dashboard_screen.dart';
 import 'chat_screen.dart';
 import 'cameras_screen.dart';
 import 'events_screen.dart';
@@ -23,7 +23,6 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   static const List<Widget> _screens = <Widget>[
-    DashboardScreen(),
     ChatScreen(),
     EventsScreen(),
     AlertsScreen(),
@@ -31,76 +30,191 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    setState(() => _selectedIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('EyeOn AI'),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'settings') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingsScreen(),
-                  ),
-                );
-              } else if (value == 'logout') {
-                _logout();
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'settings',
-                child: Text('Settings'),
-              ),
-              const PopupMenuItem<String>(
-                value: 'logout',
-                child: Text('Logout'),
-              ),
-            ],
-          ),
-        ],
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1a1a2e), Color(0xFF16213e), Color(0xFF0f3460)],
+        ),
       ),
-      body: _screens.elementAt(_selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
+        extendBody: true,
+
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: AppBar(
+                backgroundColor: Colors.white.withOpacity(0.05),
+                elevation: 0,
+                centerTitle: true,
+
+                title: ShaderMask(
+                  shaderCallback: (bounds) => LinearGradient(
+                    colors: [Colors.white, Colors.red.shade200],
+                  ).createShader(bounds),
+                  child: const Text(
+                    'EyeOn AI',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+
+                actions: [
+                  PopupMenuButton<String>(
+                    color: Colors.black.withOpacity(0.3),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    itemBuilder: (BuildContext context) => [
+                      PopupMenuItem<String>(
+                        value: 'settings',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.settings,
+                              color: Colors.white.withOpacity(0.8),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Settings',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'logout',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.logout,
+                              color: Colors.red.shade300,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Logout',
+                              style: TextStyle(
+                                color: Colors.red.shade300,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (value) {
+                      if (value == 'settings') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsScreen(),
+                          ),
+                        );
+                      } else if (value == 'logout') {
+                        _logout();
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat Agent'),
-          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Alerts',
+        ),
+
+        body: Padding(
+          padding: const EdgeInsets.only(top: kToolbarHeight + 8),
+          child: _screens.elementAt(_selectedIndex),
+        ),
+
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 26),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(26),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+              child: Container(
+                height: 72,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(26),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.red.shade400.withOpacity(0.15),
+                      blurRadius: 30,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+
+                child: BottomNavigationBar(
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  type: BottomNavigationBarType.fixed,
+                  selectedItemColor: Colors.red.shade400,
+                  unselectedItemColor: Colors.white.withOpacity(0.4),
+                  selectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                  unselectedLabelStyle: const TextStyle(fontSize: 11),
+                  currentIndex: _selectedIndex,
+                  onTap: _onItemTapped,
+
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.chat_bubble_outline),
+                      label: 'Chat',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.event_note_outlined),
+                      label: 'Events',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.notifications_outlined),
+                      label: 'Alerts',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.camera_alt_outlined),
+                      label: 'Cameras',
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.camera), label: 'Cameras'),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
+        ),
       ),
     );
   }
 
   void _logout() async {
     final authController = context.read<AuthController>();
-    final chatController = context.read<ChatController>();
-    final camerasController = context.read<CamerasController>();
-    final eventsController = context.read<EventsController>();
-    final alertsController = context.read<AlertsController>();
-    chatController.clearData();
-    camerasController.clearData();
-    eventsController.clearData();
-    alertsController.clearData();
+    context.read<ChatController>().clearData();
+    context.read<CamerasController>().clearData();
+    context.read<EventsController>().clearData();
+    context.read<AlertsController>().clearData();
     await authController.signOut();
   }
 }

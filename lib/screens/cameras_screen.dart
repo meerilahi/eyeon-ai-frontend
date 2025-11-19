@@ -28,345 +28,349 @@ class _CamerasScreenState extends State<CamerasScreen> {
   Widget build(BuildContext context) {
     final camerasController = context.watch<CamerasController>();
     return Scaffold(
-      backgroundColor: const Color(0xFF0f0f1e),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1a1a2e),
-        elevation: 0,
-        title: const Text(
-          'Cameras',
-          style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.grid_view_rounded),
-            onPressed: () {},
-            tooltip: 'Grid View',
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1a1a2e),
+              const Color(0xFF16213e),
+              const Color(0xFF0f3460),
+            ],
           ),
-        ],
-      ),
-
-      body: camerasController.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation(Colors.red),
-              ),
-            )
-          : camerasController.cameras.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.red.withOpacity(0.1),
-                      border: Border.all(color: Colors.red.withOpacity(0.3)),
-                    ),
-                    child: Icon(
-                      Icons.videocam_off_rounded,
-                      size: 64,
-                      color: Colors.red.shade300,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'No Cameras Found',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Add your first camera to start monitoring',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.5),
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton.icon(
-                    onPressed: () => _showAddCameraDialog(context),
-                    icon: const Icon(Icons.add_rounded),
-                    label: const Text('Add Camera'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade600,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: camerasController.cameras.length,
-              itemBuilder: (context, index) {
-                final camera = camerasController.cameras[index];
-                final isOnline =
-                    index % 3 != 2; // Simulate online/offline status
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        const Color(0xFF1a1a2e),
-                        const Color(0xFF16213e).withOpacity(0.8),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isOnline
-                          ? Colors.green.withOpacity(0.3)
-                          : Colors.red.withOpacity(0.3),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isOnline ? Colors.green : Colors.red)
-                            .withOpacity(0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      // Camera Preview/Thumbnail
-                      Container(
-                        height: 180,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(20),
-                            topRight: Radius.circular(20),
-                          ),
-                          image: DecorationImage(
-                            image: NetworkImage(
-                              'https://picsum.photos/seed/camera$index/400/300',
-                            ),
-                            fit: BoxFit.cover,
-                            colorFilter: ColorFilter.mode(
-                              Colors.black.withOpacity(0.3),
-                              BlendMode.darken,
-                            ),
-                          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: camerasController.isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(Colors.white),
                         ),
-                        child: Stack(
+                      )
+                    : camerasController.cameras.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Status badge
-                            Positioned(
-                              top: 12,
-                              right: 12,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: (isOnline ? Colors.green : Colors.red)
-                                      .withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          (isOnline ? Colors.green : Colors.red)
-                                              .withOpacity(0.5),
-                                      blurRadius: 8,
-                                      spreadRadius: 2,
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      isOnline ? 'LIVE' : 'OFFLINE',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                            Icon(
+                              Icons.videocam_off_rounded,
+                              size: 64,
+                              color: Colors.white.withOpacity(0.6),
+                            ),
+                            const SizedBox(height: 24),
+                            const Text(
+                              'No Cameras Found',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            // Recording indicator
-                            if (isOnline)
-                              Positioned(
-                                top: 12,
-                                left: 12,
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.6),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.fiber_manual_record,
-                                    color: Colors.red,
-                                    size: 16,
-                                  ),
-                                ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Add your first camera to start monitoring',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.5),
+                                fontSize: 14,
                               ),
-                            // Play button overlay
-                            Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.black.withOpacity(0.5),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 2,
-                                  ),
+                            ),
+                            const SizedBox(height: 32),
+                            ElevatedButton.icon(
+                              onPressed: () => _showAddCameraDialog(context),
+                              icon: const Icon(Icons.add_rounded),
+                              label: const Text('Add Camera'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red.shade600,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 32,
+                                  vertical: 16,
                                 ),
-                                child: const Icon(
-                                  Icons.play_arrow_rounded,
-                                  color: Colors.white,
-                                  size: 32,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-                      // Camera Info
-                      Padding(
+                      )
+                    : ListView.builder(
                         padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                        itemCount: camerasController.cameras.length,
+                        itemBuilder: (context, index) {
+                          final camera = camerasController.cameras[index];
+                          final isOnline =
+                              index % 3 != 2; // Simulate online/offline status
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.white.withOpacity(0.05),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                              ),
+                            ),
+                            child: Column(
                               children: [
+                                // Camera Preview/Thumbnail
                                 Container(
-                                  padding: const EdgeInsets.all(10),
+                                  height: 180,
                                   decoration: BoxDecoration(
-                                    color: Colors.red.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: Colors.black.withOpacity(0.5),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(20),
+                                      topRight: Radius.circular(20),
+                                    ),
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                        'https://picsum.photos/seed/camera$index/400/300',
+                                      ),
+                                      fit: BoxFit.cover,
+                                      colorFilter: ColorFilter.mode(
+                                        Colors.black.withOpacity(0.3),
+                                        BlendMode.darken,
+                                      ),
+                                    ),
                                   ),
-                                  child: Icon(
-                                    Icons.videocam_rounded,
-                                    color: Colors.red.shade400,
-                                    size: 20,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  child: Stack(
                                     children: [
-                                      Text(
-                                        camera.name,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
+                                      // Status badge
+                                      Positioned(
+                                        top: 12,
+                                        right: 12,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                (isOnline
+                                                        ? Colors.green
+                                                        : Colors.red)
+                                                    .withOpacity(0.9),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color:
+                                                    (isOnline
+                                                            ? Colors.green
+                                                            : Colors.red)
+                                                        .withOpacity(0.5),
+                                                blurRadius: 8,
+                                                spreadRadius: 2,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 6,
+                                                height: 6,
+                                                decoration: const BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                isOnline ? 'LIVE' : 'OFFLINE',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        camera.description,
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.6),
-                                          fontSize: 13,
+                                      // Recording indicator
+                                      if (isOnline)
+                                        Positioned(
+                                          top: 12,
+                                          left: 12,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withOpacity(
+                                                0.6,
+                                              ),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.fiber_manual_record,
+                                              color: Colors.red,
+                                              size: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      // Play button overlay
+                                      Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.black.withOpacity(
+                                              0.5,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(
+                                                0.3,
+                                              ),
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.play_arrow_rounded,
+                                            color: Colors.white,
+                                            size: 32,
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.delete_outline_rounded,
-                                    color: Colors.red.shade400,
-                                  ),
-                                  onPressed: () {
-                                    _showDeleteConfirmation(
-                                      context,
-                                      camera.cameraId,
-                                      camera.name,
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.05),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.link_rounded,
-                                    color: Colors.white.withOpacity(0.5),
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      camera.rtspUrl,
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.7),
-                                        fontSize: 12,
-                                        fontFamily: 'monospace',
+                                // Camera Info
+                                Padding(
+                                  padding: const EdgeInsets.all(20),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.withOpacity(
+                                                0.15,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Icon(
+                                              Icons.videocam_rounded,
+                                              color: Colors.red.shade400,
+                                              size: 20,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  camera.name,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  camera.description,
+                                                  style: TextStyle(
+                                                    color: Colors.white
+                                                        .withOpacity(0.6),
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.delete_outline_rounded,
+                                              color: Colors.red.shade400,
+                                            ),
+                                            onPressed: () {
+                                              _showDeleteConfirmation(
+                                                context,
+                                                camera.cameraId,
+                                                camera.name,
+                                              );
+                                            },
+                                          ),
+                                        ],
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                      const SizedBox(height: 16),
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.3),
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.white.withOpacity(
+                                              0.05,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.link_rounded,
+                                              color: Colors.white.withOpacity(
+                                                0.5,
+                                              ),
+                                              size: 16,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                camera.rtspUrl,
+                                                style: TextStyle(
+                                                  color: Colors.white
+                                                      .withOpacity(0.7),
+                                                  fontSize: 12,
+                                                  fontFamily: 'monospace',
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          _buildActionButton(
+                                            'View Stream',
+                                            Icons.play_circle_outline_rounded,
+                                            Colors.blue,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          _buildActionButton(
+                                            'Settings',
+                                            Icons.settings_outlined,
+                                            Colors.purple,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                _buildActionButton(
-                                  'View Stream',
-                                  Icons.play_circle_outline_rounded,
-                                  Colors.blue,
-                                ),
-                                const SizedBox(width: 12),
-                                _buildActionButton(
-                                  'Settings',
-                                  Icons.settings_outlined,
-                                  Colors.purple,
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+              ),
+            ],
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddCameraDialog(context),
         backgroundColor: Colors.red.shade600,

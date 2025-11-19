@@ -36,339 +36,302 @@ class _EventsScreenState extends State<EventsScreen> {
               .toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0f0f1e),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1a1a2e),
-        elevation: 0,
-        title: const Text(
-          'Events',
-          style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF1a1a2e),
+              const Color(0xFF16213e),
+              const Color(0xFF0f3460),
+            ],
+          ),
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.purple.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.purple.withOpacity(0.3)),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.event_note_rounded,
-                  size: 16,
-                  color: Colors.purple,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '${eventsController.events.length} Total',
-                  style: const TextStyle(fontSize: 12, color: Colors.purple),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Filter Tabs
-          Container(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                _buildFilterChip('All', eventsController.events.length),
-                const SizedBox(width: 12),
-                _buildFilterChip(
-                  'Active',
-                  eventsController.events.where((e) => e.isActive).length,
-                ),
-                const SizedBox(width: 12),
-                _buildFilterChip(
-                  'Inactive',
-                  eventsController.events.where((e) => !e.isActive).length,
-                ),
-              ],
-            ),
-          ),
-
-          // Events List
-          Expanded(
-            child: eventsController.isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation(Colors.purple),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Filter Tabs
+              Container(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    _buildFilterChip('All', eventsController.events.length),
+                    const SizedBox(width: 12),
+                    _buildFilterChip(
+                      'Active',
+                      eventsController.events.where((e) => e.isActive).length,
                     ),
-                  )
-                : filteredEvents.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(32),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.purple.withOpacity(0.1),
-                            border: Border.all(
-                              color: Colors.purple.withOpacity(0.3),
+                    const SizedBox(width: 12),
+                    _buildFilterChip(
+                      'Inactive',
+                      eventsController.events.where((e) => !e.isActive).length,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Events List
+              Expanded(
+                child: eventsController.isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(Colors.white),
+                        ),
+                      )
+                    : filteredEvents.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.event_busy_rounded,
+                              size: 64,
+                              color: Colors.white.withOpacity(0.6),
                             ),
-                          ),
-                          child: Icon(
-                            Icons.event_busy_rounded,
-                            size: 64,
-                            color: Colors.purple.shade300,
-                          ),
+                            const SizedBox(height: 24),
+                            Text(
+                              _selectedFilter == 'All'
+                                  ? 'No Events Found'
+                                  : 'No $_selectedFilter Events',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _selectedFilter == 'All'
+                                  ? 'Create your first event to get started'
+                                  : 'No events match this filter',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.5),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 24),
-                        Text(
-                          _selectedFilter == 'All'
-                              ? 'No Events Found'
-                              : 'No $_selectedFilter Events',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _selectedFilter == 'All'
-                              ? 'Create your first event to get started'
-                              : 'No events match this filter',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    itemCount: filteredEvents.length,
-                    itemBuilder: (context, index) {
-                      final event = filteredEvents[index];
-                      final eventColors = [
-                        Colors.purple,
-                        Colors.blue,
-                        Colors.teal,
-                        Colors.orange,
-                        Colors.pink,
-                      ];
-                      final color = eventColors[index % eventColors.length];
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                        itemCount: filteredEvents.length,
+                        itemBuilder: (context, index) {
+                          final event = filteredEvents[index];
+                          final eventColors = [
+                            Colors.purple,
+                            Colors.blue,
+                            Colors.teal,
+                            Colors.orange,
+                            Colors.pink,
+                          ];
+                          final color = eventColors[index % eventColors.length];
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFF1a1a2e),
-                              color.withOpacity(0.05),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: event.isActive
-                                ? color.withOpacity(0.3)
-                                : Colors.white.withOpacity(0.05),
-                          ),
-                          boxShadow: event.isActive
-                              ? [
-                                  BoxShadow(
-                                    color: color.withOpacity(0.15),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ]
-                              : [],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.white.withOpacity(0.05),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.1),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Icon
+                                  Row(
+                                    children: [
+                                      // Icon
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: color.withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: color.withOpacity(0.3),
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          event.isActive
+                                              ? Icons.event_available_rounded
+                                              : Icons.event_busy_rounded,
+                                          color: color,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      // Event Description
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              event.eventDescription,
+                                              style: TextStyle(
+                                                color: event.isActive
+                                                    ? Colors.white
+                                                    : Colors.white.withOpacity(
+                                                        0.5,
+                                                      ),
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                decoration: event.isActive
+                                                    ? null
+                                                    : TextDecoration
+                                                          .lineThrough,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  width: 6,
+                                                  height: 6,
+                                                  decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: event.isActive
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Text(
+                                                  event.isActive
+                                                      ? 'Active'
+                                                      : 'Inactive',
+                                                  style: TextStyle(
+                                                    color: event.isActive
+                                                        ? Colors.green.shade300
+                                                        : Colors.red.shade300,
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      // Delete Button
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.delete_outline_rounded,
+                                          color: Colors.red.shade400,
+                                        ),
+                                        onPressed: () {
+                                          _showDeleteConfirmation(
+                                            context,
+                                            event.eventId,
+                                            event.eventDescription,
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Status Switch
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: color.withOpacity(0.15),
+                                      color: Colors.black.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: color.withOpacity(0.3),
+                                        color: Colors.white.withOpacity(0.05),
                                       ),
                                     ),
-                                    child: Icon(
-                                      event.isActive
-                                          ? Icons.event_available_rounded
-                                          : Icons.event_busy_rounded,
-                                      color: color,
-                                      size: 24,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  // Event Description
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          event.eventDescription,
-                                          style: TextStyle(
-                                            color: event.isActive
-                                                ? Colors.white
-                                                : Colors.white.withOpacity(0.5),
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            decoration: event.isActive
-                                                ? null
-                                                : TextDecoration.lineThrough,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
                                         Row(
                                           children: [
-                                            Container(
-                                              width: 6,
-                                              height: 6,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: event.isActive
-                                                    ? Colors.green
-                                                    : Colors.red,
+                                            Icon(
+                                              Icons.power_settings_new_rounded,
+                                              color: Colors.white.withOpacity(
+                                                0.6,
                                               ),
+                                              size: 20,
                                             ),
-                                            const SizedBox(width: 6),
+                                            const SizedBox(width: 8),
                                             Text(
-                                              event.isActive
-                                                  ? 'Active'
-                                                  : 'Inactive',
+                                              'Toggle Status',
                                               style: TextStyle(
-                                                color: event.isActive
-                                                    ? Colors.green.shade300
-                                                    : Colors.red.shade300,
-                                                fontSize: 13,
+                                                color: Colors.white.withOpacity(
+                                                  0.7,
+                                                ),
+                                                fontSize: 14,
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Delete Button
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.delete_outline_rounded,
-                                      color: Colors.red.shade400,
-                                    ),
-                                    onPressed: () {
-                                      _showDeleteConfirmation(
-                                        context,
-                                        event.eventId,
-                                        event.eventDescription,
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Status Switch
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.05),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.power_settings_new_rounded,
-                                          color: Colors.white.withOpacity(0.6),
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Toggle Status',
-                                          style: TextStyle(
-                                            color: Colors.white.withOpacity(
-                                              0.7,
+                                        Transform.scale(
+                                          scale: 0.9,
+                                          child: Switch(
+                                            value: event.isActive,
+                                            activeColor: color,
+                                            activeTrackColor: color.withOpacity(
+                                              0.5,
                                             ),
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
+                                            inactiveThumbColor: Colors.grey,
+                                            inactiveTrackColor: Colors.grey
+                                                .withOpacity(0.3),
+                                            onChanged: (value) {
+                                              eventsController.updateEvent(
+                                                event.eventId,
+                                                event.eventDescription,
+                                                value,
+                                              );
+                                            },
                                           ),
                                         ),
                                       ],
                                     ),
-                                    Transform.scale(
-                                      scale: 0.9,
-                                      child: Switch(
-                                        value: event.isActive,
-                                        activeColor: color,
-                                        activeTrackColor: color.withOpacity(
-                                          0.5,
-                                        ),
-                                        inactiveThumbColor: Colors.grey,
-                                        inactiveTrackColor: Colors.grey
-                                            .withOpacity(0.3),
-                                        onChanged: (value) {
-                                          eventsController.updateEvent(
-                                            event.eventId,
-                                            event.eventDescription,
-                                            value,
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Timestamp placeholder
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.access_time_rounded,
-                                    color: Colors.white.withOpacity(0.4),
-                                    size: 14,
                                   ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Created ${index + 1} day${index != 0 ? 's' : ''} ago',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.4),
-                                      fontSize: 12,
-                                    ),
+                                  // Timestamp placeholder
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.access_time_rounded,
+                                        color: Colors.white.withOpacity(0.4),
+                                        size: 14,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Created ${index + 1} day${index != 0 ? 's' : ''} ago',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.4),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddEventDialog(context),
-        backgroundColor: Colors.purple.shade600,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('New Event'),
-        elevation: 8,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 90), // adjust height here
+        child: FloatingActionButton.extended(
+          onPressed: () => _showAddEventDialog(context),
+          backgroundColor: Colors.purple.shade600,
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('New Event'),
+          elevation: 8,
+        ),
       ),
     );
   }
@@ -391,12 +354,12 @@ class _EventsScreenState extends State<EventsScreen> {
           decoration: BoxDecoration(
             color: isSelected
                 ? color.withOpacity(0.2)
-                : Colors.white.withOpacity(0.03),
+                : Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
                   ? color.withOpacity(0.5)
-                  : Colors.white.withOpacity(0.05),
+                  : Colors.white.withOpacity(0.1),
               width: 1.5,
             ),
           ),

@@ -1,7 +1,6 @@
 import 'package:eyeon_ai_frontend/screens/alerts_screen.dart';
 import 'package:eyeon_ai_frontend/screens/cameras_screen.dart';
 import 'package:eyeon_ai_frontend/screens/chat_screen.dart';
-import 'package:eyeon_ai_frontend/screens/dashboard_screen.dart';
 import 'package:eyeon_ai_frontend/screens/events_screen.dart';
 import 'package:eyeon_ai_frontend/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +48,6 @@ class App extends StatelessWidget {
         home: const AuthWrapper(),
         routes: {
           '/auth': (context) => const AuthScreen(),
-          '/dashboard': (context) => const DashboardScreen(),
           '/chat': (context) => const ChatScreen(),
           '/cameras': (context) => const CamerasScreen(),
           '/events': (context) => const EventsScreen(),
