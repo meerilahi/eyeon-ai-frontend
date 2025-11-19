@@ -1,7 +1,13 @@
-# TODO: Remove Main Screen Scaffold and Add Drawer/App Bar to Each Screen
+# TODO: Update App Navigation and UI Consistency
 
-- [x] Modify lib/app.dart: Remove Scaffold from MainScreen, make it return const DashboardScreen()
-- [x] Modify lib/screens/dashboard_screen.dart: Add drawer
-- [x] Modify lib/screens/chat_screen.dart: Add drawer
-- [x] Modify lib/screens/events_screen.dart: Add drawer
-- [x] Modify lib/screens/settings_screen.dart: Add appBar and drawer
+## Tasks
+- [ ] Create `lib/screens/main_screen.dart` with bottom navigation bar for Dashboard, Chat Agent, Events, Alerts, Cameras
+- [ ] Add actions menu in MainScreen app bar for Settings and Logout
+- [ ] Update `lib/app.dart` to use MainScreen for authenticated users
+- [ ] Remove `drawer` property from all screens in `lib/screens/`
+- [ ] Update themes in `lib/utils/theme_constants.dart` for UI consistency (use dark theme as base)
+- [ ] Remove `lib/widgets/custom_drawer.dart` if no longer needed
+- [ ] Test navigation between screens
+- [ ] Verify logout functionality
+- [ ] Ensure all screens render correctly without drawers
+- [ ] Check UI consistency across screens

@@ -1,4 +1,3 @@
-import 'package:eyeon_ai_frontend/widgets/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/alerts_controller.dart';
@@ -31,7 +30,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text("Alert logs")),
-      drawer: CustomDrawer(),
+
       body: alertsController.isLoading
           ? const Center(child: CircularProgressIndicator())
           : alertsController.alerts.isEmpty

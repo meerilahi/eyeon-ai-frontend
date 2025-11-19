@@ -1,3 +1,9 @@
+import 'package:eyeon_ai_frontend/screens/alerts_screen.dart';
+import 'package:eyeon_ai_frontend/screens/cameras_screen.dart';
+import 'package:eyeon_ai_frontend/screens/chat_screen.dart';
+import 'package:eyeon_ai_frontend/screens/dashboard_screen.dart';
+import 'package:eyeon_ai_frontend/screens/events_screen.dart';
+import 'package:eyeon_ai_frontend/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'controllers/auth_controller.dart';
@@ -7,13 +13,7 @@ import 'controllers/events_controller.dart';
 import 'controllers/alerts_controller.dart';
 import 'services/supabase_service.dart';
 import 'screens/auth_screen.dart';
-import 'screens/chat_screen.dart';
-import 'screens/cameras_screen.dart';
-import 'screens/events_screen.dart';
-import 'screens/alerts_screen.dart';
-import 'screens/dashboard_screen.dart';
-import 'screens/settings_screen.dart';
-import 'utils/theme_constants.dart';
+import 'screens/main_screen.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -45,7 +45,6 @@ class App extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'EyeOn AI',
-        theme: ThemeConstants.lightTheme,
         debugShowCheckedModeBanner: false,
         home: const AuthWrapper(),
         routes: {
@@ -70,7 +69,7 @@ class AuthWrapper extends StatelessWidget {
     final authController = context.watch<AuthController>();
 
     if (authController.isAuthenticated) {
-      return const DashboardScreen();
+      return const MainScreen();
     } else {
       return const AuthScreen();
     }
