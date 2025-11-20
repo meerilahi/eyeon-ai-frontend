@@ -81,7 +81,6 @@ class AuthController extends ChangeNotifier {
   }
 
   void clearData() {
-    debugPrint('AuthController: Clearing data');
     _user = null;
     _isLoading = false;
   }

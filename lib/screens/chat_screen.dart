@@ -33,6 +33,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   void dispose() {
     _typingAnimationController.dispose();
     _scrollController.dispose();
+    _messageController.dispose();
     super.dispose();
   }
 
@@ -52,165 +53,133 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final chatController = context.watch<ChatController>();
 
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(color: Colors.transparent),
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
 
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Expanded(
+              child: chatController.messages.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+                      itemCount: chatController.messages.length,
+                      itemBuilder: (context, index) {
+                        final message = chatController.messages[index];
+                        final isUser = message.type == MessageType.user;
+                        return _buildMessageBubble(message, isUser);
+                      },
+                    ),
+            ),
+            _buildInputBar(chatController),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputBar(ChatController chatController) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(25),
+        bottom: Radius.circular(25),
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
         child: Container(
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF1a1a2e),
-                const Color(0xFF16213e),
-                const Color(0xFF0f3460),
-              ],
+            color: Colors.black.withOpacity(0.25),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+            border: Border(
+              top: BorderSide(color: Colors.white.withOpacity(0.08), width: 1),
             ),
           ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-
-                /// CHAT MESSAGES
-                Expanded(
-                  child: chatController.messages.isEmpty
-                      ? _buildEmptyState()
-                      : ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
-                          itemCount: chatController.messages.length,
-                          itemBuilder: (context, index) {
-                            final message = chatController.messages[index];
-                            final isUser = message.type == MessageType.user;
-
-                            return _buildMessageBubble(message, isUser);
-                          },
-                        ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.add_circle_outline_rounded,
+                  color: Colors.white.withOpacity(0.6),
                 ),
-
-                /// INPUT BAR — FLOATS ABOVE NAV BAR
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 30),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(25),
-                    ),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.25),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(25),
-                          ),
-                          border: Border(
-                            top: BorderSide(
-                              color: Colors.white.withOpacity(0.08),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.add_circle_outline_rounded,
-                                color: Colors.white.withOpacity(0.6),
-                              ),
-                              onPressed: () {},
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.1),
-                                  ),
-                                ),
-                                child: TextField(
-                                  controller: _messageController,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                  ),
-                                  decoration: InputDecoration(
-                                    hintText: 'Type your message...',
-                                    hintStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.4),
-                                      fontSize: 15,
-                                    ),
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 14,
-                                    ),
-                                  ),
-                                  maxLines: null,
-                                  textInputAction: TextInputAction.send,
-                                  onSubmitted: (value) {
-                                    if (value.isNotEmpty) {
-                                      chatController.sendMessage(value);
-                                      _messageController.clear();
-                                      _scrollToBottom();
-                                    }
-                                  },
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.blue.shade600,
-                                    Colors.blue.shade700,
-                                  ],
-                                ),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.blue.withOpacity(0.4),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.send_rounded,
-                                  color: Colors.white,
-                                ),
-                                onPressed: () {
-                                  if (_messageController.text.isNotEmpty) {
-                                    chatController.sendMessage(
-                                      _messageController.text,
-                                    );
-                                    _messageController.clear();
-                                    _scrollToBottom();
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
+                onPressed: () {},
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  ),
+                  child: TextField(
+                    controller: _messageController,
+                    style: const TextStyle(color: Colors.white, fontSize: 15),
+                    decoration: InputDecoration(
+                      hintText: 'Type your message...',
+                      hintStyle: TextStyle(
+                        color: Colors.white.withOpacity(0.4),
+                        fontSize: 15,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 14,
                       ),
                     ),
+                    maxLines: null,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (value) {
+                      if (value.isNotEmpty) {
+                        chatController.sendMessage(value);
+                        _messageController.clear();
+                        _scrollToBottom();
+                      }
+                    },
                   ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              _buildSendButton(chatController),
+            ],
           ),
         ),
       ),
     );
   }
 
-  /// EMPTY CHAT UI
+  Widget _buildSendButton(ChatController chatController) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.red.shade600, Colors.red.shade700],
+        ),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.red.withOpacity(0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: IconButton(
+        icon: const Icon(Icons.send_rounded, color: Colors.white),
+        onPressed: () {
+          if (_messageController.text.isNotEmpty) {
+            chatController.sendMessage(_messageController.text);
+            _messageController.clear();
+            _scrollToBottom();
+          }
+        },
+      ),
+    );
+  }
+
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -238,24 +207,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 32),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.center,
-            children: [
-              _buildSuggestionChip('Show camera status'),
-              _buildSuggestionChip('Recent events'),
-              _buildSuggestionChip('Active alerts'),
-              _buildSuggestionChip('System health'),
-            ],
-          ),
         ],
       ),
     );
   }
 
-  /// MESSAGE BUBBLES
   Widget _buildMessageBubble(Message message, bool isUser) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -265,27 +221,25 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
             : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isUser) ...[
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
-              ),
-              child: Icon(
-                Icons.smart_toy_rounded,
-                color: Colors.blue.shade300,
-                size: 20,
+          if (!isUser)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: CircleAvatar(
+                radius: 16,
+                backgroundColor: Colors.white.withOpacity(0.1),
+                child: Icon(
+                  Icons.smart_toy_rounded,
+                  color: Colors.red.shade300,
+                  size: 20,
+                ),
               ),
             ),
-            const SizedBox(width: 12),
-          ],
           Flexible(
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isUser
-                    ? Colors.blue.shade600
+                    ? Colors.red.shade600
                     : Colors.white.withOpacity(0.05),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
@@ -297,17 +251,16 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!isUser) ...[
+                  if (!isUser)
                     Text(
                       'AI Assistant',
                       style: TextStyle(
-                        color: Colors.blue.shade300,
+                        color: Colors.red.shade300,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                  ],
+                  if (!isUser) const SizedBox(height: 8),
                   Text(
                     message.content,
                     style: const TextStyle(
@@ -316,77 +269,24 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.access_time_rounded,
-                        size: 12,
-                        color: Colors.white.withOpacity(0.4),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Just now',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.4),
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
           ),
-          if (isUser) ...[
-            const SizedBox(width: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
-              ),
-              child: const Icon(
-                Icons.person_rounded,
-                color: Colors.blue,
-                size: 20,
+          if (isUser)
+            Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: CircleAvatar(
+                radius: 16,
+                backgroundColor: Colors.white.withOpacity(0.1),
+                child: Icon(
+                  Icons.person_rounded,
+                  color: Colors.red.shade300,
+                  size: 20,
+                ),
               ),
             ),
-          ],
         ],
-      ),
-    );
-  }
-
-  /// CHIPS
-  Widget _buildSuggestionChip(String text) {
-    return GestureDetector(
-      onTap: () {
-        _messageController.text = text;
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.blue.withOpacity(0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.lightbulb_outline_rounded,
-              color: Colors.blue.shade300,
-              size: 16,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              text,
-              style: TextStyle(color: Colors.blue.shade200, fontSize: 13),
-            ),
-          ],
-        ),
       ),
     );
   }

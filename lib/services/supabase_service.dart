@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/camera.dart';
+import '../models/device.dart';
 import '../models/event.dart';
 import '../models/alert.dart';
 
@@ -12,75 +11,106 @@ class SupabaseService {
 
   String get _userId => _user?.id ?? "";
 
-  // Cameras CRUD
-  Future<List<Camera>> getCameras() async {
-    debugPrint('SupabaseService: Fetching cameras for user: $_userId');
+  // Devices CRUD
+  Future<List<Device>> getDevices() async {
     final response = await _client
-        .from('cameras')
-        .select()
-        .eq("user_id", _userId);
-    final cameras = response.map((json) => Camera.fromJson(json)).toList();
-    debugPrint('SupabaseService: Fetched ${cameras.length} cameras');
-    return cameras;
+        .from('devices')
+        .select('*, cameras(*)')
+        .eq('user_id', _userId);
+    final devices = (response as List)
+        .map((json) => Device.fromJson(json))
+        .toList();
+    return devices;
   }
 
-  Future<Camera> addCamera(
-    String name,
-    String description,
-    String rtspUrl,
-  ) async {
-    debugPrint('SupabaseService: Adding camera: $name');
+  Future<Device> addDevice({
+    required String name,
+    required String type,
+    required String ipAddress,
+    required String port,
+    required String username,
+    required String password,
+  }) async {
     final response = await _client
-        .from('cameras')
-        .insert({'name': name, 'description': description, 'rtsp_url': rtspUrl})
+        .from('devices')
+        .insert({
+          'name': name,
+          'type': type,
+          'ip_address': ipAddress,
+          'port': port,
+          'username': username,
+          'password': password,
+        })
         .select()
         .single();
-    final camera = Camera.fromJson(response);
-    debugPrint('SupabaseService: Added camera: ${camera.cameraId}');
-    return camera;
+    return Device.fromJson(response);
+  }
+
+  Future<void> updateDevice(Device device) async {
+    await _client
+        .from('devices')
+        .update({
+          'name': device.name,
+          'type': device.type,
+          'ip_address': device.ipAddress,
+          'port': device.port,
+          'username': device.username,
+          'password': device.password,
+        })
+        .eq('device_id', device.deviceId);
+  }
+
+  Future<void> deleteDevice(String deviceId) async {
+    await _client.from('devices').delete().eq('device_id', deviceId);
+  }
+
+  // Cameras CRUD
+  Future<Camera> addCamera(String deviceId, String name, String rtspUrl) async {
+    final response = await _client
+        .from('cameras')
+        .insert({
+          'device_id': deviceId,
+          'name': name,
+          'rtsp_url': rtspUrl,
+          'user_id': _userId,
+        })
+        .select()
+        .single();
+    return Camera.fromJson(response);
   }
 
   Future<void> updateCamera(
     String cameraId,
     String name,
-    String description,
     String rtspUrl,
   ) async {
-    debugPrint('SupabaseService: Updating camera: $cameraId');
     await _client
         .from('cameras')
-        .update({'name': name, 'description': description, 'rtsp_url': rtspUrl})
+        .update({'name': name, 'rtsp_url': rtspUrl})
         .eq('camera_id', cameraId);
-    debugPrint('SupabaseService: Updated camera: $cameraId');
   }
 
   Future<void> deleteCamera(String cameraId) async {
-    debugPrint('SupabaseService: Deleting camera: $cameraId');
     await _client.from('cameras').delete().eq('camera_id', cameraId);
-    debugPrint('SupabaseService: Deleted camera: $cameraId');
   }
 
   // Events CRUD
   Future<List<Event>> getEvents() async {
-    debugPrint('SupabaseService: Fetching events for user: $_userId');
     final response = await _client
         .from('events')
         .select()
         .eq("user_id", _userId);
     final events = response.map((json) => Event.fromJson(json)).toList();
-    debugPrint('SupabaseService: Fetched ${events.length} events');
     return events;
   }
 
   Future<Event> addEvent(String eventDescription) async {
-    debugPrint('SupabaseService: Adding event: $eventDescription');
     final response = await _client
         .from('events')
         .insert({'event_description': eventDescription, 'is_active': true})
         .select()
         .single();
     final event = Event.fromJson(response);
-    debugPrint('SupabaseService: Added event: ${event.eventId}');
     return event;
   }
 
@@ -89,35 +119,28 @@ class SupabaseService {
     String eventDescription,
     bool isActive,
   ) async {
-    debugPrint('SupabaseService: Updating event: $eventId');
     await _client
         .from('events')
         .update({'event_description': eventDescription, 'is_active': isActive})
         .eq('event_id', eventId);
-    debugPrint('SupabaseService: Updated event: $eventId');
   }
 
   Future<void> deleteEvent(String eventId) async {
-    debugPrint('SupabaseService: Deleting event: $eventId');
     await _client.from('events').delete().eq('event_id', eventId);
-    debugPrint('SupabaseService: Deleted event: $eventId');
   }
 
-  // Alerts
+  // Alerts CRUD
   Future<List<AlertLog>> getAlerts() async {
-    debugPrint('SupabaseService: Fetching alerts for user: $_userId');
     final response = await _client
         .from('alerts')
         .select()
         .eq("user_id", _userId)
         .order('created_at', ascending: false);
     final alerts = response.map((json) => AlertLog.fromJson(json)).toList();
-    debugPrint('SupabaseService: Fetched ${alerts.length} alerts');
     return alerts;
   }
 
   Stream<List<AlertLog>> subscribeToAlerts() {
-    debugPrint('SupabaseService: Subscribing to alerts for user: $_userId');
     return _client
         .from('alerts')
         .stream(primaryKey: ['alert_id'])
@@ -125,9 +148,6 @@ class SupabaseService {
         .order('created_at')
         .map((rows) {
           final alerts = rows.map(AlertLog.fromJson).toList();
-          debugPrint(
-            'SupabaseService: Stream received ${alerts.length} alerts',
-          );
           return alerts;
         });
   }

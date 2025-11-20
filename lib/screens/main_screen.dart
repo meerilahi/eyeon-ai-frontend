@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/chat_controller.dart';
-import '../controllers/cameras_controller.dart';
+import '../controllers/device_controller.dart';
 import '../controllers/events_controller.dart';
 import '../controllers/alerts_controller.dart';
 import 'chat_screen.dart';
-import 'cameras_screen.dart';
+import 'devices_screen.dart';
 import 'events_screen.dart';
 import 'alerts_screen.dart';
 import 'settings_screen.dart';
@@ -26,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
     ChatScreen(),
     EventsScreen(),
     AlertsScreen(),
-    CamerasScreen(),
+    DevicesScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -127,7 +127,7 @@ class _MainScreenState extends State<MainScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const SettingsScreen(),
+                            builder: (context) => SettingsScreen(),
                           ),
                         );
                       } else if (value == 'logout') {
@@ -141,22 +141,19 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
 
-        body: Padding(
-          padding: const EdgeInsets.only(top: kToolbarHeight + 8),
-          child: _screens.elementAt(_selectedIndex),
-        ),
+        body: _screens.elementAt(_selectedIndex),
 
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 26),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(26),
+            borderRadius: BorderRadius.circular(16),
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Container(
                 height: 72,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.07),
-                  borderRadius: BorderRadius.circular(26),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.white.withOpacity(0.1)),
                   boxShadow: [
                     BoxShadow(
@@ -197,7 +194,7 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.camera_alt_outlined),
-                      label: 'Cameras',
+                      label: 'Devices',
                     ),
                   ],
                 ),
@@ -212,7 +209,7 @@ class _MainScreenState extends State<MainScreen> {
   void _logout() async {
     final authController = context.read<AuthController>();
     context.read<ChatController>().clearData();
-    context.read<CamerasController>().clearData();
+    context.read<DeviceController>().clearData();
     context.read<EventsController>().clearData();
     context.read<AlertsController>().clearData();
     await authController.signOut();

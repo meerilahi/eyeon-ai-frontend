@@ -1,13 +1,14 @@
 import 'package:eyeon_ai_frontend/screens/alerts_screen.dart';
-import 'package:eyeon_ai_frontend/screens/cameras_screen.dart';
+import 'package:eyeon_ai_frontend/screens/devices_screen.dart';
 import 'package:eyeon_ai_frontend/screens/chat_screen.dart';
 import 'package:eyeon_ai_frontend/screens/events_screen.dart';
 import 'package:eyeon_ai_frontend/screens/settings_screen.dart';
+import 'package:eyeon_ai_frontend/services/websocket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/chat_controller.dart';
-import 'controllers/cameras_controller.dart';
+import 'controllers/device_controller.dart';
 import 'controllers/events_controller.dart';
 import 'controllers/alerts_controller.dart';
 import 'services/supabase_service.dart';
@@ -23,21 +24,28 @@ class App extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthController()),
         ProxyProvider<AuthController, SupabaseService>(
-          update: (_, auth, _) => SupabaseService(auth.user),
+          update: (_, auth, __) => SupabaseService(auth.user),
         ),
-        ChangeNotifierProvider(create: (_) => ChatController()),
-        ChangeNotifierProxyProvider<SupabaseService, CamerasController>(
-          create: (_) => CamerasController(null), // Will be updated by update
-          update: (_, supabase, controller) =>
-              controller!..supabaseService = supabase,
+        ChangeNotifierProxyProvider<AuthController, ChatController>(
+          create: (_) => ChatController(),
+          update: (_, auth, chatController) {
+            if (auth.isAuthenticated) {
+              chatController!.service = WebSocketService(auth.user);
+            }
+            return chatController!;
+          },
+        ),
+        ChangeNotifierProxyProvider<SupabaseService, DeviceController>(
+          create: (_) => DeviceController(null),
+          update: (_, supabase, controller) => controller!..service = supabase,
         ),
         ChangeNotifierProxyProvider<SupabaseService, EventsController>(
-          create: (_) => EventsController(null), // Will be updated by update
+          create: (_) => EventsController(null),
           update: (_, supabase, controller) =>
               controller!..supabaseService = supabase,
         ),
         ChangeNotifierProxyProvider<SupabaseService, AlertsController>(
-          create: (_) => AlertsController(null), // Will be updated by update
+          create: (_) => AlertsController(null),
           update: (_, supabase, controller) =>
               controller!..supabaseService = supabase,
         ),
@@ -49,10 +57,10 @@ class App extends StatelessWidget {
         routes: {
           '/auth': (context) => const AuthScreen(),
           '/chat': (context) => const ChatScreen(),
-          '/cameras': (context) => const CamerasScreen(),
+          '/devices': (context) => const DevicesScreen(),
           '/events': (context) => const EventsScreen(),
           '/alerts': (context) => const AlertsScreen(),
-          '/settings': (context) => const SettingsScreen(),
+          '/settings': (context) => SettingsScreen(),
         },
       ),
     );

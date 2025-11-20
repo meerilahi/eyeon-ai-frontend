@@ -3,7 +3,10 @@ import '../models/message.dart';
 import '../services/websocket_service.dart';
 
 class ChatController extends ChangeNotifier {
-  final WebSocketService _webSocketService = WebSocketService();
+  WebSocketService? _service;
+  ChatController();
+
+  set service(WebSocketService service) => _service = service;
 
   final List<Message> _messages = [];
   bool _isConnected = false;
@@ -12,9 +15,9 @@ class ChatController extends ChangeNotifier {
   bool get isConnected => _isConnected;
 
   void connect() {
-    debugPrint('ChatController: Connecting to WebSocket (simulated)');
-    _webSocketService.connect().listen((message) {
-      debugPrint('ChatController: Received message: ${message.content}');
+    if (_isConnected) return;
+
+    _service!.connect().listen((message) {
       _messages.add(message);
       notifyListeners();
     });
@@ -23,35 +26,22 @@ class ChatController extends ChangeNotifier {
   }
 
   void sendMessage(String content) {
-    debugPrint('ChatController: Sending message: $content');
-    final message = Message(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: MessageType.user,
-      content: content,
-      timestamp: DateTime.now(),
-    );
-    _messages.add(message);
-    _webSocketService.sendMessage(content);
+    if (content.isEmpty) return;
+
+    _service!.sendMessage(content);
     notifyListeners();
   }
 
   void disconnect() {
-    debugPrint('ChatController: Disconnecting from WebSocket');
-    _webSocketService.disconnect();
+    _service!.disconnect();
     _isConnected = false;
     notifyListeners();
   }
 
-  Future<List<Message>> fetchMessages() async {
-    debugPrint('ChatController: Chat history will be provided by WebSocket');
-    // Return empty list since chat history comes from WebSocket
-    return [];
-  }
-
   void clearData() {
-    debugPrint('ChatController: Clearing data');
     _messages.clear();
     _isConnected = false;
+    notifyListeners();
   }
 
   @override

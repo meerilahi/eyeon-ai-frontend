@@ -30,15 +30,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1a1a2e),
-              const Color(0xFF16213e),
-              const Color(0xFF0f3460),
-            ],
+            colors: [Color(0xFF1a1a2e), Color(0xFF16213e), Color(0xFF0f3460)],
           ),
         ),
         child: SafeArea(
@@ -81,7 +77,10 @@ class _AlertsScreenState extends State<AlertsScreen> {
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         itemCount: alertsController.alerts.length,
                         itemBuilder: (context, index) {
                           final alert = alertsController.alerts[index];
@@ -97,14 +96,17 @@ class _AlertsScreenState extends State<AlertsScreen> {
                               alertColor = Colors.red;
                               break;
                           }
+
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                              color: Colors.white.withOpacity(0.05),
+                              color: Colors.white.withOpacity(
+                                0.08,
+                              ), // subtle glass
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.white.withOpacity(0.05),
                               ),
                             ),
                             child: Column(
@@ -118,12 +120,6 @@ class _AlertsScreenState extends State<AlertsScreen> {
                                       decoration: BoxDecoration(
                                         color: alertColor,
                                         shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: alertColor.withOpacity(0.5),
-                                            blurRadius: 8,
-                                          ),
-                                        ],
                                       ),
                                     ),
                                     const SizedBox(width: 12),
