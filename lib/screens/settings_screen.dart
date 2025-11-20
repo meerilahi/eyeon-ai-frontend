@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../controllers/settings_controller.dart';
+import '../models/settings.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -8,17 +11,85 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // New Settings Model
-  String _name = "Taimoor Ul Islam";
-  String _email = "taimoor@gmail.com";
-  String _contactNumber = "0315-1234567";
+  // Local fields to show instantly on UI
+  String _name = "";
+  String _email = "";
+  String _contactNumber = "";
 
-  bool _alertOnCall = true;
-  bool _alertOnSms = true;
+  bool _alertOnCall = false;
+  bool _alertOnSms = false;
   bool _alertOnEmail = false;
+
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeSettings();
+    });
+  }
+
+  Future<void> _initializeSettings() async {
+    final controller = context.read<SettingsController>();
+
+    await controller.loadSettings();
+
+    final s = controller.settings;
+
+    if (s != null) {
+      setState(() {
+        _name = s.name;
+        _email = s.email;
+        _contactNumber = s.contactNumber;
+        _alertOnCall = s.alertOnCall;
+        _alertOnSms = s.alertOnSms;
+        _alertOnEmail = s.alertOnEmail;
+        _loading = false;
+      });
+    } else {
+      // First time — create default empty settings
+      final newSettings = Settings(
+        name: "",
+        email: "",
+        contactNumber: "",
+        alertOnCall: false,
+        alertOnSms: false,
+        alertOnEmail: false,
+      );
+
+      await controller.createSettings(newSettings);
+
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _saveSettings() async {
+    final controller = context.read<SettingsController>();
+
+    final updated = Settings(
+      name: _name,
+      email: _email,
+      contactNumber: _contactNumber,
+      alertOnCall: _alertOnCall,
+      alertOnSms: _alertOnSms,
+      alertOnEmail: _alertOnEmail,
+    );
+
+    await controller.updateSettings(updated);
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF0f0f1e),
+        body: Center(child: CircularProgressIndicator(color: Colors.white)),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0f0f1e),
       appBar: AppBar(
@@ -39,6 +110,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ------------------------------------------------------------
+            // PROFILE CARD (Works with controller)
+            // ------------------------------------------------------------
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -82,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _name,
+                          _name.isEmpty ? "Your Name" : _name,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -110,7 +184,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   IconButton(
                     icon: Icon(Icons.edit_outlined, color: Colors.red.shade300),
-                    onPressed: () {},
+                    onPressed: () => _openEditProfileDialog(),
                   ),
                 ],
               ),
@@ -130,7 +204,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               trailing: Switch(
                 value: _alertOnCall,
                 activeColor: Colors.green,
-                onChanged: (v) => setState(() => _alertOnCall = v),
+                onChanged: (v) async {
+                  setState(() => _alertOnCall = v);
+                  await _saveSettings();
+                },
               ),
             ),
 
@@ -142,7 +219,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               trailing: Switch(
                 value: _alertOnSms,
                 activeColor: Colors.blue,
-                onChanged: (v) => setState(() => _alertOnSms = v),
+                onChanged: (v) async {
+                  setState(() => _alertOnSms = v);
+                  await _saveSettings();
+                },
               ),
             ),
 
@@ -154,15 +234,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               trailing: Switch(
                 value: _alertOnEmail,
                 activeColor: Colors.orange,
-                onChanged: (v) => setState(() => _alertOnEmail = v),
+                onChanged: (v) async {
+                  setState(() => _alertOnEmail = v);
+                  await _saveSettings();
+                },
               ),
             ),
 
+            // Rest of UI unchanged...
             const SizedBox(height: 24),
-
-            // --------------------------------------------------
-            // ABOUT SECTION (KEPT)
-            // --------------------------------------------------
             _buildSectionTitle('About', Icons.info_outline_rounded),
             const SizedBox(height: 12),
 
@@ -190,10 +270,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
 
             const SizedBox(height: 24),
-
-            // --------------------------------------------------
-            // ACCOUNT SECTION (KEPT)
-            // --------------------------------------------------
             _buildSectionTitle(
               'Account',
               Icons.account_circle_rounded,
@@ -211,10 +287,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
 
             const SizedBox(height: 32),
-
-            // --------------------------------------------------
-            // LOGOUT BUTTON
-            // --------------------------------------------------
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -251,8 +323,84 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  // ----------------------------
+  // PROFILE EDIT DIALOG
+  // ----------------------------
+  void _openEditProfileDialog() {
+    final nameController = TextEditingController(text: _name);
+    final emailController = TextEditingController(text: _email);
+    final contactController = TextEditingController(text: _contactNumber);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1a1a2e),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Edit Profile',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  labelStyle: TextStyle(color: Colors.white60),
+                ),
+              ),
+              TextField(
+                controller: emailController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  labelStyle: TextStyle(color: Colors.white60),
+                ),
+              ),
+              TextField(
+                controller: contactController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Contact Number',
+                  labelStyle: TextStyle(color: Colors.white60),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                setState(() {
+                  _name = nameController.text;
+                  _email = emailController.text;
+                  _contactNumber = contactController.text;
+                });
+
+                Navigator.pop(context);
+                await _saveSettings();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade600,
+              ),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // ----------------------------------------------------------
-  // REUSABLE UI COMPONENTS
+  // Reused Widgets from your original UI
   // ----------------------------------------------------------
 
   Widget _arrow() => Icon(
@@ -311,9 +459,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   child: Icon(icon, color: iconColor, size: 20),
                 ),
-
                 const SizedBox(width: 16),
-
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,7 +483,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
-
                 if (trailing != null) trailing,
               ],
             ),

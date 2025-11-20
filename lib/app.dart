@@ -1,3 +1,4 @@
+import 'package:eyeon_ai_frontend/controllers/settings_controller.dart';
 import 'package:eyeon_ai_frontend/screens/alerts_screen.dart';
 import 'package:eyeon_ai_frontend/screens/devices_screen.dart';
 import 'package:eyeon_ai_frontend/screens/chat_screen.dart';
@@ -46,6 +47,11 @@ class App extends StatelessWidget {
         ),
         ChangeNotifierProxyProvider<SupabaseService, AlertsController>(
           create: (_) => AlertsController(null),
+          update: (_, supabase, controller) =>
+              controller!..supabaseService = supabase,
+        ),
+        ChangeNotifierProxyProvider<SupabaseService, SettingsController>(
+          create: (_) => SettingsController(null),
           update: (_, supabase, controller) =>
               controller!..supabaseService = supabase,
         ),

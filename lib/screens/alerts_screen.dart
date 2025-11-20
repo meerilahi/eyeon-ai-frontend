@@ -11,6 +11,8 @@ class AlertsScreen extends StatefulWidget {
 }
 
 class _AlertsScreenState extends State<AlertsScreen> {
+  List<AlertLevel> selectedFilters = [];
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +29,11 @@ class _AlertsScreenState extends State<AlertsScreen> {
   @override
   Widget build(BuildContext context) {
     final alertsController = context.watch<AlertsController>();
+    final filteredAlerts = selectedFilters.isEmpty
+        ? alertsController.alerts
+        : alertsController.alerts
+              .where((a) => selectedFilters.contains(a.alertLevel))
+              .toList();
 
     return Scaffold(
       body: Container(
@@ -40,6 +47,74 @@ class _AlertsScreenState extends State<AlertsScreen> {
         child: SafeArea(
           child: Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    FilterChip(
+                      label: const Text("Low"),
+                      selected: selectedFilters.contains(AlertLevel.low),
+                      selectedColor: Colors.green,
+                      labelStyle: TextStyle(
+                        color: selectedFilters.contains(AlertLevel.low)
+                            ? Colors.white
+                            : Color(0xFF16213e),
+                      ),
+                      onSelected: (value) {
+                        setState(() {
+                          value
+                              ? selectedFilters.add(AlertLevel.low)
+                              : selectedFilters.remove(AlertLevel.low);
+                        });
+                      },
+                      backgroundColor: Colors.green.shade100,
+                    ),
+                    const SizedBox(width: 8),
+                    FilterChip(
+                      label: const Text("Medium"),
+                      selected: selectedFilters.contains(AlertLevel.medium),
+                      selectedColor: Colors.amber,
+                      labelStyle: TextStyle(
+                        color: selectedFilters.contains(AlertLevel.medium)
+                            ? Colors.white
+                            : Color(0xFF16213e),
+                      ),
+                      onSelected: (value) {
+                        setState(() {
+                          value
+                              ? selectedFilters.add(AlertLevel.medium)
+                              : selectedFilters.remove(AlertLevel.medium);
+                        });
+                      },
+                      backgroundColor: Colors.amber.shade200,
+                    ),
+                    const SizedBox(width: 8),
+                    FilterChip(
+                      label: const Text("High"),
+                      selected: selectedFilters.contains(AlertLevel.high),
+                      selectedColor: Colors.red,
+                      labelStyle: TextStyle(
+                        color: selectedFilters.contains(AlertLevel.high)
+                            ? Colors.white
+                            : Color(0xFF16213e),
+                      ),
+                      onSelected: (value) {
+                        setState(() {
+                          value
+                              ? selectedFilters.add(AlertLevel.high)
+                              : selectedFilters.remove(AlertLevel.high);
+                        });
+                      },
+                      backgroundColor: Colors.red.shade200,
+                    ),
+                  ],
+                ),
+              ),
+
               Expanded(
                 child: alertsController.isLoading
                     ? const Center(
@@ -81,9 +156,9 @@ class _AlertsScreenState extends State<AlertsScreen> {
                           horizontal: 16,
                           vertical: 12,
                         ),
-                        itemCount: alertsController.alerts.length,
+                        itemCount: filteredAlerts.length,
                         itemBuilder: (context, index) {
-                          final alert = alertsController.alerts[index];
+                          final alert = filteredAlerts[index];
                           Color alertColor;
                           switch (alert.alertLevel) {
                             case AlertLevel.low:

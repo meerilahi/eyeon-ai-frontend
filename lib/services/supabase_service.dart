@@ -1,3 +1,4 @@
+import 'package:eyeon_ai_frontend/models/settings.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/device.dart';
 import '../models/event.dart';
@@ -150,5 +151,61 @@ class SupabaseService {
           final alerts = rows.map(AlertLog.fromJson).toList();
           return alerts;
         });
+  }
+
+  // -------------------------------
+  // User Settings CRUD
+  // -------------------------------
+
+  Future<Settings?> getSettings() async {
+    final response = await _client
+        .from('settings')
+        .select()
+        .eq('user_id', _userId)
+        .maybeSingle();
+
+    if (response == null) return null;
+    return Settings.fromJson(response);
+  }
+
+  Future<Settings> getOrCreateSettings() async {
+    final existing = await getSettings();
+    if (existing != null) return existing;
+
+    final defaultSettings = Settings(
+      name: "",
+      email: "",
+      contactNumber: "",
+      alertOnCall: false,
+      alertOnSms: false,
+      alertOnEmail: false,
+    );
+
+    return await createSettings(defaultSettings);
+  }
+
+  Future<Settings> createSettings(Settings settings) async {
+    final response = await _client
+        .from('settings')
+        .insert({'user_id': _userId, ...settings.toJson()})
+        .select()
+        .single();
+
+    return Settings.fromJson(response);
+  }
+
+  Future<Settings> updateSettings(Settings settings) async {
+    final response = await _client
+        .from('settings')
+        .update(settings.toJson())
+        .eq('user_id', _userId)
+        .select()
+        .single();
+
+    return Settings.fromJson(response);
+  }
+
+  Future<void> deleteSettings() async {
+    await _client.from('settings').delete().eq('user_id', _userId);
   }
 }
